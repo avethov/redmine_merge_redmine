@@ -1,28 +1,77 @@
 class RedmineMerge
   def self.migrate
+    puts "About to migrate users"
+    
     SourceUser.migrate
+    puts "Done migrating users"
+    puts "About to migrate CustomFields"
     SourceCustomField.migrate
+    puts "Done migrating CustomFields"
+    puts "About to migrate Trackers"
     SourceTracker.migrate
+    puts "Done migrating Tracker"
+    puts "About to migrate CustomFields"
     SourceIssueStatus.migrate
-    SourceEnumeration.migrate_issue_priorities
-    SourceEnumeration.migrate_time_entry_activities
-    SourceEnumeration.migrate_document_categories
+    puts "Done migrating IssueStatus"
+    puts "About to migrate Project"
+    # Next three calls should be down in the project section
+#    SourceEnumeration.migrate_issue_priorities
+#    SourceEnumeration.migrate_time_entry_activities
+#    SourceEnumeration.migrate_document_categories
 
     # Project-specific data
     SourceProject.migrate
+    puts "Done migrating Project"
+    puts "About to migrate Version"
     SourceVersion.migrate
+    puts "Done migrating Version"
+    puts "About to migrate News"
     SourceNews.migrate
+    puts "Done migrating News"
+    puts "About to migrate IssueCategory"
     SourceIssueCategory.migrate
+    puts "Done migrating IssueCategory"
+    puts "About to migrate issue_priorities"
+    # KS - moved SourceEnumeration migration lower 
+    SourceEnumeration.migrate_issue_priorities
+    puts "Done migrating issue_priorities"
+    puts "About to migrate time_entry_activities"
+    SourceEnumeration.migrate_time_entry_activities
+    puts "Done migrating time_entry_activities"
+    puts "About to migrate document_categories"
+    SourceEnumeration.migrate_document_categories
+    puts "Done migrating document_categories"
+    puts "About to migrate Issue"
     SourceIssue.migrate
+    puts "Done migrating Issue"
+    puts "About to migrate IssueRelation"
     SourceIssueRelation.migrate
+    puts "Done migrating IssueRelation"
+    puts "About to migrate Journal"
     SourceJournal.migrate
+    puts "Done migrating Journal"
+    puts "About to migrate JournalDetail"
     SourceJournalDetail.migrate
+    puts "Done migrating JournalDetail"
+    puts "About to migrate TimeEntry"
     SourceTimeEntry.migrate
+    puts "Done migrating TimeEntry"
+    puts "About to migrate Document"
     SourceDocument.migrate
+    puts "Done migrating Document"
+    puts "About to migrate Wiki"
     SourceWiki.migrate
+    puts "Done migrating Wiki"
+    puts "About to migrate WikiPage"
     SourceWikiPage.migrate
+    puts "Done migrating WikiPage"
+    puts "About to migrate WikiContent"
     SourceWikiContent.migrate
+    puts "Done migrating WikiContent"
+    puts "About to migrate Attachment"
     SourceAttachment.migrate
+    puts "Done migrating Attachment"
+
   end
 
   class Mapper
@@ -33,6 +82,8 @@ class RedmineMerge
     WikiPages = {}
     Documents = {}
     Versions = {}
+    # Added by KS
+    News = {}
 
     def self.add_project(source_id, new_id)
       Projects[source_id] = new_id
@@ -90,6 +141,16 @@ class RedmineMerge
       Versions[source_id]
     end
 
+    # KS - Added to handle News so attachments pointing to News entries work correctly
+    def self.add_news(source_id, new_id)
+      News[source_id] = new_id
+    end
+
+    def self.get_new_news_id(source_id)
+      News[source_id]
+    end
+# End KS
+    
     def self.find_id_by_property(target_klass, source_id)
       # Similar to issues_helper.rb#show_detail
       source_id = source_id.to_i
@@ -109,6 +170,8 @@ class RedmineMerge
         target = find_target_record_from_source(SourceUser, User, :login, source_id)
         return target.id if target
         return nil
+      when 'News'
+        return Mapper.get_new_news_id(source_id)
       when 'Enumeration'
         target = find_target_record_from_source(SourceEnumeration, Enumeration, :name, source_id)
         return target.id if target

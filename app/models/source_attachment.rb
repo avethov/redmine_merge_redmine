@@ -9,6 +9,7 @@ class SourceAttachment < ActiveRecord::Base
 
       Attachment.create!(source_attachment.attributes) do |a|
         a.author = User.find_by_login(source_attachment.author.login)
+        # KS - added "News" to case statement below
         a.container = case source_attachment.container_type
                       when "Issue"
                         Issue.find RedmineMerge::Mapper.get_new_issue_id(source_attachment.container_id)
@@ -20,8 +21,9 @@ class SourceAttachment < ActiveRecord::Base
                         Project.find RedmineMerge::Mapper.get_new_project_id(source_attachment.container_id)
                       when "Version"
                         Version.find RedmineMerge::Mapper.get_new_version_id(source_attachment.container_id)
+                      when "News"
+                        Version.find RedmineMerge::Mapper.get_new_news_id(source_attachment.container_id)
                       end
-
       end
     end
   end

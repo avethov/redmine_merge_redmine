@@ -1,6 +1,9 @@
 class SourceWiki < ActiveRecord::Base
   include SecondDatabase
   set_table_name :wikis
+  # Added by KS
+  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+
 
   def self.migrate
     all.each do |source_wiki|
