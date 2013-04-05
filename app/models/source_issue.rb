@@ -20,12 +20,13 @@ class SourceIssue < ActiveRecord::Base
       puts "Tracker id = #{t.id} name = #{t.name}"
     end
     
-    
-    
     all.each do |source_issue|
       
       attributes = source_issue.attributes.dup.except('tracker', 'parent_id', 'lft', 'rgt')
 #      attributes = source_issue.attributes.dup.except('parent_id', 'lft', 'rgt')
+      
+      puts "source_issue.author_id: #{source_issue.author_id} source_issue.author.login: #{source_issue.author.login}"
+      
       source_issue.author_id = User.find_by_login(source_issue.author.login)
       source_issue.project_id = RedmineMerge::Mapper.get_new_project_id(source_issue.project.id)
       source_issue.assigned_to_id = User.find_by_login(source_issue.assigned_to.login) if source_issue.assigned_to
@@ -41,8 +42,8 @@ class SourceIssue < ActiveRecord::Base
 #        i.assigned_to = User.find_by_login(source_issue.assigned_to.login) if source_issue.assigned_to
 #        puts "Created #{i.id}, #{i.subject}, tracker = #{i.tracker.name}"
 
-        i.status = IssueStatus.find_by_name(source_issue.status.name)
         i.tracker = Tracker.find_by_name(source_issue.tracker.name)
+        i.status = IssueStatus.find_by_name(source_issue.status.name)
 #        i.tracker_id = Tracker.find_by_name(source_issue.tracker.name)
         i.priority = IssuePriority.find_by_name(source_issue.priority.name)
         i.category = IssueCategory.find_by_name(source_issue.category.name) if source_issue.category

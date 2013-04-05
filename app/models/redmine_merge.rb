@@ -10,14 +10,17 @@ class RedmineMerge
     puts "About to migrate Trackers"
     SourceTracker.migrate
     puts "Done migrating Tracker"
-    puts "About to migrate CustomFields"
+    puts "About to migrate IssueStatus"
     SourceIssueStatus.migrate
     puts "Done migrating IssueStatus"
+    puts "About to migrate Roles"
+    SourceRole.migrate
+    puts "Done migrating Roles"
+    puts "About to migrate Workflows"
+    SourceWorkflow.migrate
+    puts "Done migrating Workflows"
+    
     puts "About to migrate Project"
-    # Next three calls should be down in the project section
-#    SourceEnumeration.migrate_issue_priorities
-#    SourceEnumeration.migrate_time_entry_activities
-#    SourceEnumeration.migrate_document_categories
 
     # Project-specific data
     SourceProject.migrate
@@ -32,7 +35,7 @@ class RedmineMerge
     SourceIssueCategory.migrate
     puts "Done migrating IssueCategory"
     puts "About to migrate issue_priorities"
-    # KS - moved SourceEnumeration migration lower 
+    # KS - moved from above since they reference projects 
     SourceEnumeration.migrate_issue_priorities
     puts "Done migrating issue_priorities"
     puts "About to migrate time_entry_activities"
@@ -154,6 +157,8 @@ class RedmineMerge
     def self.find_id_by_property(target_klass, source_id)
       # Similar to issues_helper.rb#show_detail
       source_id = source_id.to_i
+      
+      puts "In find_id_by_property target_klass: #{target_klass} source_id: #{source_id}"
 
       case target_klass.to_s
       when 'Project'
@@ -196,6 +201,9 @@ class RedmineMerge
 
     # Utility method to dynamically find the target records
     def self.find_target_record_from_source(source_klass, target_klass, field, source_id)
+      
+      puts "In find_target_record_from_source source_klass: #{source_klass} target_klass: #{target_klass} field: #{field} source_id: #{source_id}"
+
       source = source_klass.find_by_id(source_id)
       field = field.to_sym
       if source
