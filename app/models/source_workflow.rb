@@ -3,10 +3,10 @@ class SourceWorkflow < ActiveRecord::Base
   set_table_name :workflows
 
 #  belongs_to :role22, :class_name => 'SourceRole', :foreign_key => 'role_id'
-  belongs_to :role, :class_name => 'SourceRole', :foreign_key => 'role_id'
-  belongs_to :tracker, :class_name => 'SourceTracker', :foreign_key => 'tracker_id'
-  belongs_to :old_status, :class_name => 'SourceIssueStatus', :foreign_key => 'old_status_id'
-  belongs_to :new_status, :class_name => 'SourceIssueStatus', :foreign_key => 'new_status_id'
+#  belongs_to :role, :class_name => 'SourceRole', :foreign_key => 'role_id'
+#  belongs_to :tracker, :class_name => 'SourceTracker', :foreign_key => 'tracker_id'
+#  belongs_to :old_status, :class_name => 'SourceIssueStatus', :foreign_key => 'old_status_id'
+#  belongs_to :new_status, :class_name => 'SourceIssueStatus', :foreign_key => 'new_status_id'
   
   def self.migrate
 

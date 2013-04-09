@@ -1,9 +1,13 @@
 class RedmineMerge
   def self.migrate
-    puts "About to migrate users"
-    
+    puts "About to migrate users"    
     SourceUser.migrate
     puts "Done migrating users"
+    
+    puts "About to migrate groups"    
+    SourceGroup.migrate
+    puts "Done migrating groups"
+
     puts "About to migrate CustomFields"
     SourceCustomField.migrate
     puts "Done migrating CustomFields"
@@ -16,15 +20,23 @@ class RedmineMerge
     puts "About to migrate Roles"
     SourceRole.migrate
     puts "Done migrating Roles"
-    puts "About to migrate Workflows"
-    SourceWorkflow.migrate
-    puts "Done migrating Workflows"
+#    puts "About to migrate Workflows"
+#    SourceWorkflow.migrate
+#    puts "Done migrating Workflows"
     
-    puts "About to migrate Project"
 
     # Project-specific data
+    puts "About to migrate Project"
     SourceProject.migrate
     puts "Done migrating Project"
+
+    puts "About to migrate Member Members"
+    SourceMember.migrateMembers
+    puts "Done migrating Member Members"
+    puts "About to migrate Member Groups"
+    SourceMember.migrateGroups
+    puts "Done migrating Member Groups"
+    
     puts "About to migrate Version"
     SourceVersion.migrate
     puts "Done migrating Version"
