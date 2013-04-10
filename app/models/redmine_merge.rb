@@ -20,9 +20,9 @@ class RedmineMerge
     puts "About to migrate Roles"
     SourceRole.migrate
     puts "Done migrating Roles"
-#    puts "About to migrate Workflows"
-#    SourceWorkflow.migrate
-#    puts "Done migrating Workflows"
+    puts "About to migrate Workflows"
+    SourceWorkflow.migrate
+    puts "Done migrating Workflows"
     
 
     # Project-specific data
@@ -56,6 +56,27 @@ class RedmineMerge
     puts "About to migrate document_categories"
     SourceEnumeration.migrate_document_categories
     puts "Done migrating document_categories"
+
+    puts "About to migrate Document"
+    SourceDocument.migrate
+    puts "Done migrating Document"
+    puts "About to migrate Wiki"
+    SourceWiki.migrate
+    puts "Done migrating Wiki"
+    puts "About to migrate WikiPage"
+    SourceWikiPage.migrate
+    puts "Done migrating WikiPage"
+    puts "About to migrate WikiContent"
+    SourceWikiContent.migrate
+    puts "Done migrating WikiContent"
+    puts "About to migrate WikiContentVersions"
+    SourceWikiContentVersions.migrate
+    puts "Done migrating WikiContentVersions"
+    puts "About to migrate WikiRedirect"
+    SourceWikiRedirect.migrate
+    puts "Done migrating WikiRedirect"
+    # The remaining tables are associated with the "issues" table
+    
     puts "About to migrate Issue"
     SourceIssue.migrate
     puts "Done migrating Issue"
@@ -71,18 +92,6 @@ class RedmineMerge
     puts "About to migrate TimeEntry"
     SourceTimeEntry.migrate
     puts "Done migrating TimeEntry"
-    puts "About to migrate Document"
-    SourceDocument.migrate
-    puts "Done migrating Document"
-    puts "About to migrate Wiki"
-    SourceWiki.migrate
-    puts "Done migrating Wiki"
-    puts "About to migrate WikiPage"
-    SourceWikiPage.migrate
-    puts "Done migrating WikiPage"
-    puts "About to migrate WikiContent"
-    SourceWikiContent.migrate
-    puts "Done migrating WikiContent"
     puts "About to migrate Attachment"
     SourceAttachment.migrate
     puts "Done migrating Attachment"
@@ -95,6 +104,7 @@ class RedmineMerge
     Journals = {}
     Wikis = {}
     WikiPages = {}
+    WikiContent = {}
     Documents = {}
     Versions = {}
     # Added by KS
@@ -132,6 +142,14 @@ class RedmineMerge
       Wikis[source_id]
     end
 
+    def self.add_wiki_content(source_id, new_id)
+      WikiContent[source_id] = new_id
+    end
+
+    def self.get_new_wiki_content_id(source_id)
+      WikiContent[source_id]
+    end
+    
     def self.add_wiki_page(source_id, new_id)
       WikiPages[source_id] = new_id
     end

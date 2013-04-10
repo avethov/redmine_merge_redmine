@@ -1,25 +1,26 @@
 class SourceWiki < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :wikis
-  # Added by KS
-  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
-
+  self.table_name = "wikis"
 
   def self.migrate
     all.each do |source_wiki|
 
+      puts "source_wiki.project_id: #{source_wiki.project_id}"
       project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_wiki.project_id))
-
-      wiki = Wiki.create!(source_wiki.attributes) do |w|
-        w.project = project
+      puts "migrated project: #{project.name}"
+      wiki = Wiki.find_by_project_id(project.id)
+      
+      # If the wiki already exists don't add it
+      if !wiki            
+        puts "Create the wiki for migrated project: #{project.name} "
+        wiki = Wiki.create!(source_wiki.attributes) do |w|
+          w.project = project
+        end      
       end
-
+              
+      puts "Adding wiki to map, source_wiki.id: #{source_wiki.id} migrated_wiki.id: #{wiki.id}"
       RedmineMerge::Mapper.add_wiki(source_wiki.id, wiki.id)
 
-      # Need to remove any default wikis if they exist
-      if project.wiki.start_page == 'Wiki' && wiki.start_page != 'Wiki'
-        project.wiki.destroy
-      end
     end
   end
 end

@@ -19,9 +19,6 @@ class SourceUser < ActiveRecord::Base
     #    all.each do |source_user|
       next if User.find_by_mail(source_user.mail)
       next if User.find_by_login(source_user.login)
-#      next if source_user.type == "AnonymousUser"
-#      # Added by KS - don't migrate groups here, done in SourceGroup
-#      next if source_user.type == "Group"
       
       User.create!(source_user.attributes) do |u|
         u.login = source_user.login

@@ -3,8 +3,6 @@ class SourceDocument < ActiveRecord::Base
   set_table_name :documents
 
   belongs_to :category, :class_name => 'SourceEnumeration', :foreign_key => 'category_id'
-  # Added by KS
-  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
 
   def self.migrate
     all.each do |source_document|

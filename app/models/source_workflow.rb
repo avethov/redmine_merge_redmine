@@ -2,13 +2,13 @@ class SourceWorkflow < ActiveRecord::Base
   include SecondDatabase
   self.table_name = "workflows"
   
-  belongs_to :role, :class_name => 'SourceRole', :foreign_key => 'role_id'
-  belongs_to :tracker, :class_name => 'SourceTracker', :foreign_key => 'tracker_id'
-  belongs_to :old_status, :class_name => 'SourceIssueStatus', :foreign_key => 'old_status_id'
-  belongs_to :new_status, :class_name => 'SourceIssueStatus', :foreign_key => 'new_status_id'
+#  belongs_to :role, :class_name => 'SourceRole', :foreign_key => 'role_id'
+#  belongs_to :tracker, :class_name => 'SourceTracker', :foreign_key => 'tracker_id'
+#  belongs_to :old_status, :class_name => 'SourceIssueStatus', :foreign_key => 'old_status_id'
+#  belongs_to :new_status, :class_name => 'SourceIssueStatus', :foreign_key => 'new_status_id'
   
   def self.migrate
-    puts "Print out the Source IssueStatus"
+#    puts "Print out the Source IssueStatus"
 #    SourceIssueStatus.find do |sis|
 #      puts "SourceIssueStatus id = #{sis.id} name = #{sis.name}"
 #    end
@@ -28,38 +28,26 @@ class SourceWorkflow < ActiveRecord::Base
 #      puts "Role id = #{r.id} name = #{r.name}"
 #    end
 #    
-    all.each do |source_workflow|    
-
-#      puts "attributes: #{source_workflow.attributes}"
-#      source_workflow.attributes.each do |a|
-#        puts "attribute: #{a}"
-#      end
-      
-            
-      puts "SouceWorkflow: #{source_workflow.id} role_id: #{source_workflow.role_id}"
-#      puts "Role id: #{source_workflow.role22.id} name: #{source_workflow.role22.name} "
-#      source_workflow.role.establish_connection :source_redmine
-      puts "Role id: #{source_workflow.role.id} name: #{source_workflow.role.name} "
-#      source_workflow.tracker.establish_connection :source_redmine
-      puts "Tracker id: #{source_workflow.tracker.id} name: #{source_workflow.tracker.name} "
-#      source_workflow.old_status.establish_connection :source_redmine
-      puts "Migrating workflows old_status_id = #{source_workflow.old_status.id} old_status name = #{source_workflow.old_status.name}"
-#      source_workflow.new_status.establish_connection :source_redmine
-      puts "new_status_id = #{source_workflow.new_status.id}"
-      puts "new_status name = #{source_workflow.new_status.name}"
-      
-      WorkflowRule.create!(source_workflow.attributes) do |w|
- #       Tracker.establish_connection :production
-        w.tracker = Tracker.find_by_name(source_workflow.tracker.name)
- #       IssueStatus.establish_connection :production
-        w.old_status = IssueStatus.find_by_name(source_workflow.old_status.name)
-        puts "Merged workflow old_status = #{w.old_status.name}"
-        w.new_status = IssueStatus.find_by_name(source_workflow.new_status.name)
-        puts "Merged workflow new_status = #{w.new_status.name}"
- #       Role.establish_connection :production
-        w.role = Role.find_by_name(source_workflow.role.name)
+    all.each do |source_workflow|
+    
+          old_status = SourceIssueStatus.find_by_id(source_workflow.old_status_id)
+    
+          new_status = SourceIssueStatus.find_by_id(source_workflow.new_status_id)
+    
+          role = SourceRole.find_by_id(source_workflow.role_id)
+    
+          tracker = SourceTracker.find_by_id(source_workflow.tracker_id)
+    
+          WorkflowRule.create!(source_workflow.attributes) do |w|
+            w.old_status = IssueStatus.find_by_name(old_status.name)
+            w.new_status = IssueStatus.find_by_name(new_status.name)
+            w.role = Role.find_by_name(role.name)
+            w.tracker = Tracker.find_by_name(tracker.name)
+            w.type = "WorkflowTransition"
+          end
+    
+        end
+    
       end
-      
+    
     end
-  end
-end
