@@ -4,7 +4,8 @@ class SourceProject < ActiveRecord::Base
 
   has_many :enabled_modules, :class_name => 'SourceEnabledModule', :foreign_key => 'project_id'
   has_and_belongs_to_many :trackers, :class_name => 'SourceTracker', :join_table => 'projects_trackers', :foreign_key => 'project_id', :association_foreign_key => 'tracker_id'
-  
+  has_and_belongs_to_many :custom_fields, :class_name => 'SourceCustomField', :join_table => "custom_fields_projects", :foreign_key => 'project_id', :association_foreign_key => 'custom_field_id'
+
       
   def self.migrate
     all(:order => 'lft ASC').each do |source_project|
@@ -25,8 +26,7 @@ class SourceProject < ActiveRecord::Base
         puts "handling project trackers for project #{p.name}"
         # KS - for some reason the project trackers get initialized with entries for all trackers -- need to clear out
         p.trackers = []
-#        puts "After emptying out p.trackers for project, project name = #{p.name} trackers = #{p.trackers}"
-        
+#        puts "After emptying out p.trackers for project, project name = #{p.name} trackers = #{p.trackers}"        
         
         if source_project.trackers
           source_project.trackers.each do |source_tracker|
@@ -37,8 +37,21 @@ class SourceProject < ActiveRecord::Base
           end
         end
         
-        puts "Done with trackers for project #{p.name}"
-        
+        # Deal with custom_fields
+        puts "handling custom_fields_trackers for tracker #{source_project.name}"        
+        if source_project.custom_fields
+          source_project.custom_fields.each do |source_custom_field|
+            puts "source_custom_field name:  #{source_custom_field.name} id: #{source_custom_field.id}"
+            merged_custom_field = IssueCustomField.find_by_name(source_custom_field.name)  
+            if merged_custom_field
+              puts "merged_custom_field name:  #{merged_custom_field.name} id: #{merged_custom_field.id}"
+              p.issue_custom_fields << merged_custom_field
+              puts "After inserting merged_custom_field name =  #{merged_custom_field.name} id = #{merged_custom_field.id}"
+            end
+          end
+        end        
+        puts "Done with custom_fields for tracker #{p.name}"
+                
       end
       
       # Parent/child projects
