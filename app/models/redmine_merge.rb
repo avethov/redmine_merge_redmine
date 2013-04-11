@@ -30,12 +30,20 @@ class RedmineMerge
     SourceProject.migrate
     puts "Done migrating Project"
 
+    puts "About to migrate Queries"
+    SourceQuery.migrate
+    puts "Done migrating Queries"    
+    
+    puts "About to migrate Repositories"
+    SourceRepository.migrate
+    puts "Done migrating Repositories"  
+    
     puts "About to migrate Member Members"
     SourceMember.migrateMembers
     puts "Done migrating Member Members"
     puts "About to migrate Member Groups"
     SourceMember.migrateGroups
-    puts "Done migrating Member Groups"
+    puts "Done migrating Member Groups" 
     
     puts "About to migrate Version"
     SourceVersion.migrate
