@@ -3,6 +3,10 @@ class RedmineMerge
     puts "About to migrate users"    
     SourceUser.migrate
     puts "Done migrating users"
+
+    puts "About to migrate UserPreferences"    
+    SourceUserPreference.migrate
+    puts "Done migrating UserPreferences"
     
     puts "About to migrate groups"    
     SourceGroup.migrate
@@ -103,7 +107,13 @@ class RedmineMerge
     puts "About to migrate Attachment"
     SourceAttachment.migrate
     puts "Done migrating Attachment"
-
+    puts "About to migrate Watchers"
+    SourceWatcher.migrate
+    puts "Done migrating Watchers"
+    puts "About to migrate CustomValues"
+    SourceCustomValue.migrate
+    puts "Done migrating CustomValues"
+    
   end
 
   class Mapper
