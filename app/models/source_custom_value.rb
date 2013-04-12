@@ -10,7 +10,7 @@ class SourceCustomValue < ActiveRecord::Base
       
       CustomValue.create!(source_custom_value.attributes) do |cv|
         cv.custom_field = CustomField.find_by_name(source_custom_value.custom_field.name)
-        w.customized = case source_custom_value.customized_type
+        cv.customized = case source_custom_value.customized_type
                       when "Issue"
                         Issue.find RedmineMerge::Mapper.get_new_issue_id(source_custom_value.customized_id)
                       when "Document"

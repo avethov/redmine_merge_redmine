@@ -23,10 +23,10 @@ class SourceWatcher < ActiveRecord::Base
       # as opposed to doing this in the do block
       temp_user = User.find_by_login(source_watcher.user.login)
       source_watcher.user_id = temp_user.id
-      puts "  merged_watcher.watchable_type: #{source_watcher.watchable_type}"
-      puts "  merged_watcher.watchable_id: #{source_watcher.watchable_id}"
-      puts "  merged_watcher.user.login: #{temp_user.login}"
-
+      
+      # In VLab thus far we are not dealing with messages (so skip them if there happen to be any)
+      next if source_watcher.watchable_type == "Message"
+      
       source_watcher.watchable = case source_watcher.watchable_type
                     when "Issue"
                       Issue.find RedmineMerge::Mapper.get_new_issue_id(source_watcher.watchable_id)
@@ -41,7 +41,15 @@ class SourceWatcher < ActiveRecord::Base
                     when "News"
                       News.find RedmineMerge::Mapper.get_new_news_id(source_watcher.watchable_id)
                     end
-      Watcher.create!(source_watcher.attributes)
+
+      puts "  merged_watcher.watchable_type: #{source_watcher.watchable_type}"
+      puts "  merged_watcher.watchable_id: #{source_watcher.watchable_id}"
+      puts "  merged_watcher.user.login: #{temp_user.login}"
+
+      # Don't migrate watcher entries for News events where the News author is the watcher
+      if !((source_watcher.watchable_type == "News") && (source_watcher.watchable.author.login == temp_user.login))
+        Watcher.create!(source_watcher.attributes)
+      end
     end
   end
 end
