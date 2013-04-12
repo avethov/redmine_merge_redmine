@@ -22,7 +22,7 @@ class SourceAttachment < ActiveRecord::Base
                       when "Version"
                         Version.find RedmineMerge::Mapper.get_new_version_id(source_attachment.container_id)
                       when "News"
-                        Version.find RedmineMerge::Mapper.get_new_news_id(source_attachment.container_id)
+                        News.find RedmineMerge::Mapper.get_new_news_id(source_attachment.container_id)
                       end
       end
     end

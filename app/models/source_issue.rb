@@ -3,7 +3,7 @@ class SourceIssue < ActiveRecord::Base
   include SecondDatabase
 
   self.table_name = "issues"
-
+  
   def self.migrate
 
     puts "There are #{all.count} issues to migrate"
@@ -12,9 +12,18 @@ class SourceIssue < ActiveRecord::Base
 
       puts "Source issue.id = #{source_issue.id}"
 
-      assignedTo = SourceUser.find_by_id(source_issue.assigned_to_id)
+      assignedTo = SourcePrincipal.find_by_id(source_issue.assigned_to_id)      
       puts "  Source 'assigned to' ID = #{source_issue.assigned_to_id}"
-      puts "  'Assigned to' login = #{assignedTo.login}" if assignedTo
+      if (assignedTo && assignedTo.type == "User")
+        puts "  'Assigned to' login = #{assignedTo.login}"
+        mergedAssignedTo = User.find_by_login(assignedTo.login)
+        puts "   Merged 'Assigned to' login = #{mergedAssignedTo.login}"
+      end
+      if (assignedTo && assignedTo.type == "Group")
+        puts "  'Assigned to' group name = #{assignedTo.lastname}" 
+        mergedAssignedTo = Group.find_by_lastname(assignedTo.lastname)
+        puts "   Merged 'Assigned to' lastname = #{mergedAssignedTo.lastname}"
+      end
 
       author = SourceUser.find_by_id(source_issue.author_id)
       puts "  Source author ID = #{source_issue.author_id}"
@@ -41,10 +50,12 @@ class SourceIssue < ActiveRecord::Base
       tracker = SourceTracker.find_by_id(source_issue.tracker_id)
       puts "  Source tracker ID = #{source_issue.tracker_id}"
       puts "  Tracker name = #{tracker.name}"
-
-      source_issue.author_id = User.find_by_login(author.login)
+      
+      mergedAuthor = User.find_by_login(author.login)
+      source_issue.author_id = mergedAuthor.id 
+      puts "  New author id: #{source_issue.author_id} "
       source_issue.project_id = RedmineMerge::Mapper.get_new_project_id(project.id)
-      source_issue.assigned_to_id = User.find_by_login(assignedTo.login) if assignedTo
+      source_issue.assigned_to_id = mergedAssignedTo.id if assignedTo
       if source_issue.fixed_version_id
         source_issue.fixed_version_id = RedmineMerge::Mapper.get_new_version_id(source_issue.fixed_version_id)
       end

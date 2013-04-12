@@ -95,24 +95,28 @@ class RedmineMerge
     puts "About to migrate IssueRelation"
     SourceIssueRelation.migrate
     puts "Done migrating IssueRelation"
-    puts "About to migrate Journal"
-    SourceJournal.migrate
-    puts "Done migrating Journal"
-    puts "About to migrate JournalDetail"
-    SourceJournalDetail.migrate
-    puts "Done migrating JournalDetail"
-    puts "About to migrate TimeEntry"
-    SourceTimeEntry.migrate
-    puts "Done migrating TimeEntry"
-    puts "About to migrate Attachment"
-    SourceAttachment.migrate
-    puts "Done migrating Attachment"
+    
     puts "About to migrate Watchers"
     SourceWatcher.migrate
     puts "Done migrating Watchers"
     puts "About to migrate CustomValues"
     SourceCustomValue.migrate
     puts "Done migrating CustomValues"
+    
+    puts "About to migrate Journal"
+    SourceJournal.migrate
+    puts "Done migrating Journal"
+    puts "About to migrate JournalDetail"
+    SourceJournalDetail.migrate
+    puts "Done migrating JournalDetail"
+
+    puts "About to migrate TimeEntry"
+    SourceTimeEntry.migrate
+    puts "Done migrating TimeEntry"
+    puts "About to migrate Attachment"
+    SourceAttachment.migrate
+    puts "Done migrating Attachment"
+
     
   end
 
@@ -206,8 +210,6 @@ class RedmineMerge
       # Similar to issues_helper.rb#show_detail
       source_id = source_id.to_i
       
-      puts "In find_id_by_property target_klass: #{target_klass} source_id: #{source_id}"
-
       case target_klass.to_s
       when 'Project'
         return Mapper.get_new_journal_id(source_id)
@@ -250,8 +252,6 @@ class RedmineMerge
     # Utility method to dynamically find the target records
     def self.find_target_record_from_source(source_klass, target_klass, field, source_id)
       
-      puts "In find_target_record_from_source source_klass: #{source_klass} target_klass: #{target_klass} field: #{field} source_id: #{source_id}"
-
       source = source_klass.find_by_id(source_id)
       field = field.to_sym
       if source
