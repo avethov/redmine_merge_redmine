@@ -5,61 +5,64 @@ class SourceProject < ActiveRecord::Base
   has_many :enabled_modules, :class_name => 'SourceEnabledModule', :foreign_key => 'project_id'
   has_and_belongs_to_many :trackers, :class_name => 'SourceTracker', :join_table => 'projects_trackers', :foreign_key => 'project_id', :association_foreign_key => 'tracker_id'
   has_and_belongs_to_many :custom_fields, :class_name => 'SourceCustomField', :join_table => "custom_fields_projects", :foreign_key => 'project_id', :association_foreign_key => 'custom_field_id'
+  belongs_to :parent, :class_name => 'SourceProject', :foreign_key => 'parent_id'
 
-      
+  def find_target_project
+    Project.find_by_name(name) || Project.find_by_identifier(identifier)
+  end
+
+  def self.find_target(source_project)
+    return nil unless source_project
+    Project.find_by_id(RedmineMerge::Mapper.get_new_project_id(source_project.id)) ||
+      Project.find_by_name(source_project.name) ||
+      Project.find_by_identifier(source_project.identifier)
+  end
+
+  def self.create_target(source_project)
+    # KS - additions to try to prevent the errors when calling create()
+    # Unauthorized assignment to lft: it's an internal field handled by acts_as_nested_set code, use move_to_* methods instead.
+
+    attributes = source_project.attributes.dup.except('trackers', 'parent_id', 'lft', 'rgt')
+    project = Project.create!(attributes) do |p|
+      p.status = source_project.status
+      if source_project.enabled_modules
+        p.enabled_module_names = source_project.enabled_modules.collect(&:name)
+      end
+
+      puts "handling project trackers for project #{p.name}"
+      # KS - for some reason the project trackers get initialized with entries for all trackers -- need to clear out
+      p.trackers = []
+      Array(source_project.trackers).each do |source_tracker|
+        target_tracker = SourceTracker.find_target(source_tracker)
+        p.trackers << target_tracker if target_tracker
+      end
+
+      # Take over custom fields for the new target project
+      Array(source_project.custom_fields).each do |source_custom_field|
+        target_custom_field = SourceCustomField.find_target(source_custom_field)
+        p.issue_custom_fields << target_custom_field if target_custom_field
+      end
+    end
+
+    if source_project.parent
+      project.set_parent!(SourceProject.find_target(source_project.parent))
+    end
+
+    project
+  end
+
   def self.migrate
     all(:order => 'lft ASC').each do |source_project|
-      next if Project.find_by_name(source_project.name)
-      next if Project.find_by_identifier(source_project.identifier)
-      
-      # KS - additions to try to prevent the errors when calling create()
-      # Unauthorized assignment to lft: it's an internal field handled by acts_as_nested_set code, use move_to_* methods instead.
-  
-      attributes = source_project.attributes.dup.except('trackers', 'parent_id', 'lft', 'rgt')
-          
-      project = Project.create!(attributes) do |p|
-        p.status = source_project.status
-        if source_project.enabled_modules
-          p.enabled_module_names = source_project.enabled_modules.collect(&:name)
-        end
-        
-        puts "handling project trackers for project #{p.name}"
-        # KS - for some reason the project trackers get initialized with entries for all trackers -- need to clear out
-        p.trackers = []
-#        puts "After emptying out p.trackers for project, project name = #{p.name} trackers = #{p.trackers}"        
-        
-        if source_project.trackers
-          source_project.trackers.each do |source_tracker|
-            merged_tracker = Tracker.find_by_name(source_tracker.name)
-#            puts "merged_tracker name =  #{merged_tracker.name} id = #{merged_tracker.id}"
-            p.trackers << merged_tracker if merged_tracker
-#            puts "After inserting merged_tracker name =  #{merged_tracker.name} id = #{merged_tracker.id}" if merged_tracker
-          end
-        end
-        
-        # Deal with custom_fields
-        puts "handling custom_fields_trackers for tracker #{source_project.name}"        
-        if source_project.custom_fields
-          source_project.custom_fields.each do |source_custom_field|
-            puts "source_custom_field name:  #{source_custom_field.name} id: #{source_custom_field.id}"
-            merged_custom_field = IssueCustomField.find_by_name(source_custom_field.name)  
-            if merged_custom_field
-              puts "merged_custom_field name:  #{merged_custom_field.name} id: #{merged_custom_field.id}"
-              p.issue_custom_fields << merged_custom_field
-              puts "After inserting merged_custom_field name =  #{merged_custom_field.name} id = #{merged_custom_field.id}"
-            end
-          end
-        end        
-        puts "Done with custom_fields for tracker #{p.name}"
-                
+      target_project = SourceProject.find_target(source_project)
+
+      if target_project
+        puts "  Skipping existing project with #{target_project.name} (#{target_project.id}: #{target_project.identifier})"
+      else
+        puts "  Migrating project #{source_project.name} (#{source_project.identifier})"
+        target_project ||= create_target(source_project)
       end
-      
-      # Parent/child projects
-      if source_project.parent_id
-        project.set_parent!(Project.find_by_id(RedmineMerge::Mapper.get_new_project_id(source_project.parent_id)))
-      end
-      
-      RedmineMerge::Mapper.add_project(source_project.id, project.id)
+
+      RedmineMerge::Mapper.add_project(source_project.id, target_project.id)
     end
   end
 end
