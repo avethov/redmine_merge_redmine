@@ -7,10 +7,6 @@ class SourceProject < ActiveRecord::Base
   has_and_belongs_to_many :custom_fields, :class_name => 'SourceCustomField', :join_table => "custom_fields_projects", :foreign_key => 'project_id', :association_foreign_key => 'custom_field_id'
   belongs_to :parent, :class_name => 'SourceProject', :foreign_key => 'parent_id'
 
-  def find_target_project
-    Project.find_by_name(name) || Project.find_by_identifier(identifier)
-  end
-
   def self.find_target(source_project)
     return nil unless source_project
     Project.find_by_id(RedmineMerge::Mapper.get_new_project_id(source_project.id)) ||
@@ -58,8 +54,8 @@ class SourceProject < ActiveRecord::Base
       if target_project
         puts "  Skipping existing project with #{target_project.name} (#{target_project.id}: #{target_project.identifier})"
       else
-        puts "  Migrating project #{source_project.name} (#{source_project.identifier})"
-        target_project ||= create_target(source_project)
+        puts "  Migrating project #{source_project.name} (#{source_project.id}: #{source_project.identifier})"
+        target_project = create_target(source_project)
       end
 
       RedmineMerge::Mapper.add_project(source_project.id, target_project.id)
