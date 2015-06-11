@@ -3,16 +3,30 @@ class SourceQuery < ActiveRecord::Base
   self.table_name = "queries"
 
   belongs_to :user, :class_name => 'SourceUser', :foreign_key => 'user_id'
+  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+
+  def self.find_target(source_query)
+    project = SourceProject.find_target(source_query.project)
+    user = SourceUser.find_target(source_query.user)
+    ::Query.first(:conditions => {
+                    :project_id => project,
+                    :user_id => user,
+                    :name => source_query.name
+                  })
+  end
 
   def self.migrate
     all.each do |source_query|
-      
-# Unable to use just Query because the wrong class is found
-#      Query.create!(source_query.attributes) do |q|
-      RedmineQuery.create!(source_query.attributes) do |q|
-        q.project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_query.project_id))
-        q.user = User.find_by_login(source_query.user.login)
-        puts "migrated query, source_query.user.login: #{source_query.user.login}  migrated_user.login: #{q.user.login}"
+      target_query = SourceQuery.find_target(source_query)
+      if target_query
+        puts "  Skipping existing query #{target_query.name}"
+        next
+      end
+
+      puts "Migrating query #{source_query.name}"
+      ::Query.create!(source_query.attributes) do |q|
+        q.project = SourceProject.find_target(source_query.project)
+        q.user = SourceUser.find_target(source_query.user)
       end
     end
   end
