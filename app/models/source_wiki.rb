@@ -2,25 +2,29 @@ class SourceWiki < ActiveRecord::Base
   include SecondDatabase
   self.table_name = "wikis"
 
+  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+
+  def self.find_target(source_wiki)
+    return nil unless source_wiki
+    project = SourceProject.find_target(source_wiki.project)
+    Wiki.find_by_id(RedmineMerge::Mapper.get_new_wiki_id(source_wiki.id)) ||
+      Wiki.find_by_project_id(project.id)
+  end
+
   def self.migrate
     all.each do |source_wiki|
+      target_wiki = SourceWiki.find_target(source_wiki)
 
-      puts "source_wiki.project_id: #{source_wiki.project_id}"
-      project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_wiki.project_id))
-      puts "migrated project: #{project.name}"
-      wiki = Wiki.find_by_project_id(project.id)
-      
-      # If the wiki already exists don't add it
-      if !wiki            
-        puts "Create the wiki for migrated project: #{project.name} "
-        wiki = Wiki.create!(source_wiki.attributes) do |w|
-          w.project = project
-        end      
+      if target_wiki
+        puts "  Skipping existing wiki for project #{target_wiki.project.name}"
+      else
+        puts "  Migrating wiki for project #{source_wiki.project.name}"
+        target_wiki = Wiki.create!(source_wiki.attributes) do |w|
+          w.project = SourceProject.find_target(source_wiki.project)
+        end
       end
-              
-      puts "Adding wiki to map, source_wiki.id: #{source_wiki.id} migrated_wiki.id: #{wiki.id}"
-      RedmineMerge::Mapper.add_wiki(source_wiki.id, wiki.id)
 
+      RedmineMerge::Mapper.add_wiki(source_wiki.id, target_wiki.id)
     end
   end
 end
