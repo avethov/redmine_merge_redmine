@@ -2,34 +2,33 @@ class SourceWikiPage < ActiveRecord::Base
   include SecondDatabase
   set_table_name :wiki_pages
 
+  belongs_to :wiki, :class_name => 'SourceWiki', :foreign_key => 'wiki_id'
+  belongs_to :parent, :class_name => 'SourceWikiPage', :foreign_key => 'parent_id'
+
+  def self.find_target(source_wiki_page)
+    return nil unless source_wiki_page
+    wiki = SourceWiki.find_target(source_wiki_page.wiki)
+    WikiPage.find_by_title_and_wiki_id(source_wiki_page.title, wiki.id)
+  end
+
   def self.migrate
-    # First migrate the root entries
-  all(:conditions => {:parent_id => nil}).each do |source_root_wiki_page|
-      puts "source_root_wiki_page.wiki_id: #{source_root_wiki_page.wiki_id}"
-      puts "source_root_wiki_page.parent_id: #{source_root_wiki_page.parent_id}"
-      
-      wiki_page = WikiPage.create!(source_root_wiki_page.attributes) do |wp|
-        wp.wiki = Wiki.find(RedmineMerge::Mapper.get_new_wiki_id(source_root_wiki_page.wiki_id))
+    all(:order => 'parent_id ASC').each do |source_wiki_page|
+      target_wiki_page = SourceWikiPage.find_target(source_wiki_page)
+
+      if target_wiki_page
+        puts "  Skipping existing wiki page #{source_wiki_page.title}"
+      else
+        puts <<LOG
+  Migrating wiki page #{source_wiki_page.title}
+LOG
+        target_wiki_page = WikiPage.create!(source_wiki_page.attributes) do |wp|
+          wp.wiki = SourceWiki.find_target(source_wiki_page.wiki)
+          wp.parent = SourceWikiPage.find_target(source_wiki_page.parent)
+        end
+        puts "    mapping: #{source_wiki_page.id} => #{wiki_page.id}"
       end
 
-      puts "Adding page to map, source_root_wiki_page.id: #{source_root_wiki_page.id} migrated_wiki_page.id: #{wiki_page.id}"
-
-      RedmineMerge::Mapper.add_wiki_page(source_root_wiki_page.id, wiki_page.id)
-    end
-    
-    # Now migrate the child pages
-    all(:order => 'parent_id ASC', :conditions => ["parent_id IS NOT NULL"]).each do |source_wiki_page|
-      puts "source_wiki_page.wiki_id: #{source_wiki_page.wiki_id}"
-      puts "source_wiki_page.parent_id: #{source_wiki_page.parent_id}"
-      
-      wiki_page = WikiPage.create!(source_wiki_page.attributes) do |wp|
-        wp.wiki = Wiki.find(RedmineMerge::Mapper.get_new_wiki_id(source_wiki_page.wiki_id))
-        wp.parent = WikiPage.find(RedmineMerge::Mapper.get_new_wiki_page_id(source_wiki_page.parent_id)) if source_wiki_page.parent_id
-      end
-
-      puts "Adding page to map, source_wiki_page.id: #{source_wiki_page.id} migrated_wiki_page.id: #{wiki_page.id}"
-
-      RedmineMerge::Mapper.add_wiki_page(source_wiki_page.id, wiki_page.id)
+      RedmineMerge::Mapper.add_wiki_page(source_wiki_page.id, target_wiki_page.id)
     end
   end
 end
