@@ -1,27 +1,36 @@
 class SourceVersion < ActiveRecord::Base
   include SecondDatabase
   set_table_name :versions
-  
-  # KS - Added
+
   belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+
+  def self.find_target(source_version)
+    return nil unless source_version
+    Version.find_by_id(RedmineMerge::Mapper.get_new_version_id(source_version.id)) ||
+      Version.first(:conditions => {
+                      :name => source_version.name,
+                      :project_id => SourceProject.find_target(source_version.project).id
+                    })
+  end
 
   def self.migrate
     all.each do |source_version|
-      puts "source_version project name = #{source_version.project.name} version name = #{source_version.name}"
-      # Added by KS to handle situation where entries may already be in database -- should only happen if you migrate twice
-      version_temp = RedmineMerge::Mapper.find_id_by_property("Version", source_version.id)
-      puts "Found matching version in merged db #{version_temp.name}" if version_temp
-      
-#      next if !RedmineMerge::Mapper.find_id_by_property("Version", source_version.id)
-#      next if (Project.find_by_name(source_version.project.name) && 
-#      next if Project.find_by_identifier(source_project.identifier)
-      puts "Migrating source_version project name = #{source_version.project.name} version name = #{source_version.name}"
+      target_version = SourceVersion.find_target(source_version)
 
-      version = Version.create!(source_version.attributes) do |v|
-        v.project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_version.project_id))
+      if target_version
+        puts "  Skipping existing version #{source_version.name}"
+      else
+        puts <<LOG
+  Migrating version
+    project: #{source_version.project.name}
+    version: #{source_version.name}
+LOG
+        target_version = Version.create!(source_version.attributes) do |v|
+          v.project = SourceProject.find_target(source_version.project)
+        end
       end
 
-      RedmineMerge::Mapper.add_version(source_version.id, version.id)
+      RedmineMerge::Mapper.add_version(source_version.id, target_version.id)
     end
   end
 end
