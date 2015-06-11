@@ -1,14 +1,14 @@
 class RedmineMerge
   def self.migrate
-    puts "About to migrate users"    
+    puts "About to migrate users"
     SourceUser.migrate
     puts "Done migrating users"
 
-    puts "About to migrate UserPreferences"    
+    puts "About to migrate UserPreferences"
     SourceUserPreference.migrate
     puts "Done migrating UserPreferences"
-    
-    puts "About to migrate groups"    
+
+    puts "About to migrate groups"
     SourceGroup.migrate
     puts "Done migrating groups"
 
@@ -27,7 +27,7 @@ class RedmineMerge
     puts "About to migrate Workflows"
     SourceWorkflow.migrate
     puts "Done migrating Workflows"
-    
+
 
     # Project-specific data
     puts "About to migrate Project"
@@ -36,19 +36,19 @@ class RedmineMerge
 
     puts "About to migrate Queries"
     SourceQuery.migrate
-    puts "Done migrating Queries"    
-    
+    puts "Done migrating Queries"
+
     puts "About to migrate Repositories"
     SourceRepository.migrate
-    puts "Done migrating Repositories"  
-    
+    puts "Done migrating Repositories"
+
     puts "About to migrate Member Members"
     SourceMember.migrateMembers
     puts "Done migrating Member Members"
     puts "About to migrate Member Groups"
     SourceMember.migrateGroups
-    puts "Done migrating Member Groups" 
-    
+    puts "Done migrating Member Groups"
+
     puts "About to migrate Version"
     SourceVersion.migrate
     puts "Done migrating Version"
@@ -59,7 +59,6 @@ class RedmineMerge
     SourceIssueCategory.migrate
     puts "Done migrating IssueCategory"
     puts "About to migrate issue_priorities"
-    # KS - moved from above since they reference projects 
     SourceEnumeration.migrate_issue_priorities
     puts "Done migrating issue_priorities"
     puts "About to migrate time_entry_activities"
@@ -87,22 +86,21 @@ class RedmineMerge
     puts "About to migrate WikiRedirect"
     SourceWikiRedirect.migrate
     puts "Done migrating WikiRedirect"
-    # The remaining tables are associated with the "issues" table
-    
+
     puts "About to migrate Issue"
     SourceIssue.migrate
     puts "Done migrating Issue"
     puts "About to migrate IssueRelation"
     SourceIssueRelation.migrate
     puts "Done migrating IssueRelation"
-    
+
     puts "About to migrate Watchers"
     SourceWatcher.migrate
     puts "Done migrating Watchers"
     puts "About to migrate CustomValues"
     SourceCustomValue.migrate
     puts "Done migrating CustomValues"
-    
+
     puts "About to migrate Journal"
     SourceJournal.migrate
     puts "Done migrating Journal"
@@ -113,11 +111,10 @@ class RedmineMerge
     puts "About to migrate TimeEntry"
     SourceTimeEntry.migrate
     puts "Done migrating TimeEntry"
+
     puts "About to migrate Attachment"
     SourceAttachment.migrate
     puts "Done migrating Attachment"
-
-    
   end
 
   class Mapper
@@ -129,7 +126,6 @@ class RedmineMerge
     WikiContent = {}
     Documents = {}
     Versions = {}
-    # Added by KS
     News = {}
 
     def self.add_project(source_id, new_id)
@@ -171,7 +167,7 @@ class RedmineMerge
     def self.get_new_wiki_content_id(source_id)
       WikiContent[source_id]
     end
-    
+
     def self.add_wiki_page(source_id, new_id)
       WikiPages[source_id] = new_id
     end
@@ -196,7 +192,6 @@ class RedmineMerge
       Versions[source_id]
     end
 
-    # KS - Added to handle News so attachments pointing to News entries work correctly
     def self.add_news(source_id, new_id)
       News[source_id] = new_id
     end
@@ -204,12 +199,10 @@ class RedmineMerge
     def self.get_new_news_id(source_id)
       News[source_id]
     end
-# End KS
-    
     def self.find_id_by_property(target_klass, source_id)
       # Similar to issues_helper.rb#show_detail
       source_id = source_id.to_i
-      
+
       case target_klass.to_s
       when 'Project'
         return Mapper.get_new_journal_id(source_id)
@@ -244,14 +237,13 @@ class RedmineMerge
         return target.id if target
         return nil
       end
-      
     end
 
     private
 
     # Utility method to dynamically find the target records
     def self.find_target_record_from_source(source_klass, target_klass, field, source_id)
-      
+
       source = source_klass.find_by_id(source_id)
       field = field.to_sym
       if source
