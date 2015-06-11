@@ -199,6 +199,23 @@ class RedmineMerge
     def self.get_new_news_id(source_id)
       News[source_id]
     end
+
+    # Add logic to replace any issue number found within the description (e.g.,#1234) with the new issue number
+    # - Pull out the matching issue number string from the "description"
+    # - Determine if the issue number matches a source issue number, if so get the merged issue number
+    # - Replace the source issue number with the merged issue number in the "notes" column
+    def self.replace_issue_refs(str)
+      str = str.dup
+      refs = str.scan(/#([\d]+)/).flatten
+      refs.each do |ref|
+        source_issue_id = ref.gsub(/#/, '').to_i
+        target_issue_id = RedmineMerge::Mapper.get_new_issue_id(source_issue_id)
+        puts "=> Updating ref #{ref} with ##{target_issue_id}"
+        str.gsub!("#{ref}", "##{target_issue_id}") if target_issue_id
+      end
+      str
+    end
+
     def self.find_id_by_property(target_klass, source_id)
       # Similar to issues_helper.rb#show_detail
       source_id = source_id.to_i
