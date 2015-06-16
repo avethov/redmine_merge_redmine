@@ -1,7 +1,7 @@
 
 class SourceTracker < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :trackers
+  self.table_name = 'trackers'
 
   has_and_belongs_to_many :projects, :class_name => 'SourceProject', :join_table => 'projects_trackers', :foreign_key => 'tracker_id', :association_foreign_key => 'project_id'
   has_and_belongs_to_many :custom_fields, :class_name => 'SourceCustomField', :join_table => "custom_fields_trackers", :foreign_key => 'tracker_id', :association_foreign_key => 'custom_field_id'

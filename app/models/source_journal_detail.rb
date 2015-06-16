@@ -1,6 +1,6 @@
 class SourceJournalDetail < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :journal_details
+  self.table_name = 'journal_details'
 
   belongs_to :journal, :class_name => 'SourceJournal', :foreign_key => 'journal_id'
   

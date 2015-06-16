@@ -1,6 +1,6 @@
 class SourceIssueCategory < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :issue_categories
+  self.table_name = 'issue_categories'
 
   belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
 

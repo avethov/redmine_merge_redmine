@@ -1,6 +1,6 @@
 class SourceIssueStatus < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :issue_statuses
+  self.table_name = 'issue_statuses'
 
   def self.find_target(source_issue_status)
     return nil unless source_issue_status

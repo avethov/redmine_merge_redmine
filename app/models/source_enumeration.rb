@@ -1,6 +1,6 @@
 class SourceEnumeration < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :enumerations
+  self.table_name = 'enumerations'
 
   ALLOWED_TYPES = %w(IssuePriority TimeEntryActivity DocumentCategory)
 

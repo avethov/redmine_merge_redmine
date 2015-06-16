@@ -1,6 +1,6 @@
 class SourceAttachment < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :attachments
+  self.table_name = 'attachments'
 
   belongs_to :author, :class_name => 'SourceUser', :foreign_key => 'author_id'
 

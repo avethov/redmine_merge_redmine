@@ -1,6 +1,6 @@
 class SourceProject < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :projects
+  self.table_name = 'projects'
 
   has_many :enabled_modules, :class_name => 'SourceEnabledModule', :foreign_key => 'project_id'
   has_and_belongs_to_many :trackers, :class_name => 'SourceTracker', :join_table => 'projects_trackers', :foreign_key => 'project_id', :association_foreign_key => 'tracker_id'

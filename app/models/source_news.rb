@@ -1,6 +1,6 @@
 class SourceNews < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :news
+  self.table_name = 'news'
 
   belongs_to :author, :class_name => 'SourceUser', :foreign_key => 'author_id'
   # Added by KS

@@ -1,6 +1,6 @@
 class SourceIssueRelation < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :issue_relations
+  self.table_name = 'issue_relations'
 
   belongs_to :issue_from, :class_name => 'SourceIssue', :foreign_key => 'issue_from_id'
   belongs_to :issue_to, :class_name => 'SourceIssue', :foreign_key => 'issue_to_id'
