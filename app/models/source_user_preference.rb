@@ -5,9 +5,7 @@ class SourceUserPreference < ActiveRecord::Base
 
   belongs_to :user, :class_name => 'SourceUser', :foreign_key => 'user_id'
 
-  def self.real_user_preferences
-    joins(:user).all(:conditions => { :users => { :type => "User" } })
-  end
+  scope :real_user_prefs, -> { joins(:user).where(users: { type: 'User' }) }
 
   def target_exists?
     target_user = SourceUser.find_target(user)
@@ -15,7 +13,7 @@ class SourceUserPreference < ActiveRecord::Base
   end
 
   def self.migrate
-    real_user_preferences.each do |source_user_preference|
+    real_user_prefs.each do |source_user_preference|
       if source_user_preference.target_exists?
         puts "  Skipping existing preference for #{source_user_preference.user}"
         next
