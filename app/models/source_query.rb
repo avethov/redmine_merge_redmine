@@ -1,32 +1,31 @@
 class SourceQuery < ActiveRecord::Base
   include SecondDatabase
-  self.table_name = "queries"
+  self.table_name = 'queries'
 
-  belongs_to :user, :class_name => 'SourceUser', :foreign_key => 'user_id'
-  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+  belongs_to :user,    class_name: 'SourceUser'
+  belongs_to :project, class_name: 'SourceProject'
 
   def self.find_target(source_query)
-    project = SourceProject.find_target(source_query.project)
-    user = SourceUser.find_target(source_query.user)
-    ::Query.first(:conditions => {
-                    :project_id => project,
-                    :user_id => user,
-                    :name => source_query.name
-                  })
+    source_query.type.constantize.where(
+      project_id: SourceProject.find_target(source_query.project),
+      user_id: SourceUser.find_target(source_query.user),
+      name: source_query.name
+    ).first
   end
 
   def self.migrate
     all.each do |source_query|
       target_query = SourceQuery.find_target(source_query)
       if target_query
-        puts "  Skipping existing query #{target_query.name}"
+        puts "  Skipping existing #{source_query.type} #{target_query.name}"
         next
       end
 
-      puts "Migrating query #{source_query.name}"
-      ::Query.create!(source_query.attributes) do |q|
+      puts "  Migrating #{source_query.type} #{source_query.name}"
+      query_klass = source_query.type.constantize
+      query_klass.create!(source_query.attributes) do |q|
         q.project = SourceProject.find_target(source_query.project)
-        q.user = SourceUser.find_target(source_query.user)
+        q.user    = SourceUser.find_target(source_query.user)
       end
     end
   end
