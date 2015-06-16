@@ -1,120 +1,122 @@
 class RedmineMerge
   def self.migrate
-    puts "About to migrate users"
+    # Keep the source records timestamps
+    ActiveRecord::Base.record_timestamps = false
+
+    puts 'About to migrate users'
     SourceUser.migrate
-    puts "Done migrating users"
+    puts 'Done migrating users'
 
-    puts "About to migrate UserPreferences"
+    puts 'About to migrate UserPreferences'
     SourceUserPreference.migrate
-    puts "Done migrating UserPreferences"
+    puts 'Done migrating UserPreferences'
 
-    puts "About to migrate groups"
+    puts 'About to migrate groups'
     SourceGroup.migrate
-    puts "Done migrating groups"
+    puts 'Done migrating groups'
 
-    puts "About to migrate CustomFields"
+    puts 'About to migrate CustomFields'
     SourceCustomField.migrate
-    puts "Done migrating CustomFields"
-    puts "About to migrate Trackers"
+    puts 'Done migrating CustomFields'
+    puts 'About to migrate Trackers'
     SourceTracker.migrate
-    puts "Done migrating Tracker"
-    puts "About to migrate IssueStatus"
+    puts 'Done migrating Tracker'
+    puts 'About to migrate IssueStatus'
     SourceIssueStatus.migrate
-    puts "Done migrating IssueStatus"
-    puts "About to migrate Roles"
+    puts 'Done migrating IssueStatus'
+    puts 'About to migrate Roles'
     SourceRole.migrate
-    puts "Done migrating Roles"
-    puts "About to migrate Workflows"
+    puts 'Done migrating Roles'
+    puts 'About to migrate Workflows'
     SourceWorkflow.migrate
-    puts "Done migrating Workflows"
-
+    puts 'Done migrating Workflows'
 
     # Project-specific data
-    puts "About to migrate Project"
+    puts 'About to migrate Project'
     SourceProject.migrate
-    puts "Done migrating Project"
+    puts 'Done migrating Project'
 
-    puts "About to migrate Queries"
+    puts 'About to migrate Queries'
     SourceQuery.migrate
-    puts "Done migrating Queries"
+    puts 'Done migrating Queries'
 
-    puts "About to migrate Repositories"
+    puts 'About to migrate Repositories'
     SourceRepository.migrate
-    puts "Done migrating Repositories"
+    puts 'Done migrating Repositories'
 
-    puts "About to migrate Member Members"
-    SourceMember.migrateMembers
-    puts "Done migrating Member Members"
-    puts "About to migrate Member Groups"
-    SourceMember.migrateGroups
-    puts "Done migrating Member Groups"
+    puts 'About to migrate Member Members'
+    SourceMember.migrate_members
+    puts 'Done migrating Member Members'
+    puts 'About to migrate Member Groups'
+    SourceMember.migrate_groups
+    puts 'Done migrating Member Groups'
 
-    puts "About to migrate Version"
+    puts 'About to migrate Version'
     SourceVersion.migrate
-    puts "Done migrating Version"
-    puts "About to migrate News"
+    puts 'Done migrating Version'
+    puts 'About to migrate News'
     SourceNews.migrate
-    puts "Done migrating News"
-    puts "About to migrate IssueCategory"
+    puts 'Done migrating News'
+    puts 'About to migrate IssueCategory'
     SourceIssueCategory.migrate
-    puts "Done migrating IssueCategory"
-    puts "About to migrate issue_priorities"
+    puts 'Done migrating IssueCategory'
+    puts 'About to migrate issue_priorities'
     SourceEnumeration.migrate_issue_priorities
-    puts "Done migrating issue_priorities"
-    puts "About to migrate time_entry_activities"
+    puts 'Done migrating issue_priorities'
+    puts 'About to migrate time_entry_activities'
     SourceEnumeration.migrate_time_entry_activities
-    puts "Done migrating time_entry_activities"
-    puts "About to migrate document_categories"
+    puts 'Done migrating time_entry_activities'
+    puts 'About to migrate document_categories'
     SourceEnumeration.migrate_document_categories
-    puts "Done migrating document_categories"
+    puts 'Done migrating document_categories'
 
-    puts "About to migrate Document"
+    puts 'About to migrate Document'
     SourceDocument.migrate
-    puts "Done migrating Document"
-    puts "About to migrate Wiki"
+    puts 'Done migrating Document'
+    puts 'About to migrate Wiki'
     SourceWiki.migrate
-    puts "Done migrating Wiki"
-    puts "About to migrate WikiPage"
+    puts 'Done migrating Wiki'
+    puts 'About to migrate WikiPage'
     SourceWikiPage.migrate
-    puts "Done migrating WikiPage"
-    puts "About to migrate WikiContent"
+    puts 'Done migrating WikiPage'
+    puts 'About to migrate WikiContent'
     SourceWikiContent.migrate
-    puts "Done migrating WikiContent"
-    puts "About to migrate WikiContentVersions"
+    puts 'Done migrating WikiContent'
+    puts 'About to migrate WikiContentVersions'
     SourceWikiContentVersions.migrate
-    puts "Done migrating WikiContentVersions"
-    puts "About to migrate WikiRedirect"
+    puts 'Done migrating WikiContentVersions'
+    puts 'About to migrate WikiRedirect'
     SourceWikiRedirect.migrate
-    puts "Done migrating WikiRedirect"
+    puts 'Done migrating WikiRedirect'
 
-    puts "About to migrate Issue"
+    puts 'About to migrate Issue'
     SourceIssue.migrate
-    puts "Done migrating Issue"
-    puts "About to migrate IssueRelation"
+    puts 'Done migrating Issue'
+    puts 'About to migrate IssueRelation'
     SourceIssueRelation.migrate
-    puts "Done migrating IssueRelation"
+    puts 'Done migrating IssueRelation'
 
-    puts "About to migrate Watchers"
+    puts 'About to migrate Watchers'
     SourceWatcher.migrate
-    puts "Done migrating Watchers"
-    puts "About to migrate CustomValues"
+    puts 'Done migrating Watchers'
+    puts 'About to migrate CustomValues'
     SourceCustomValue.migrate
-    puts "Done migrating CustomValues"
+    puts 'Done migrating CustomValues'
 
-    puts "About to migrate Journal"
+    puts 'About to migrate Journal'
     SourceJournal.migrate
-    puts "Done migrating Journal"
-    puts "About to migrate JournalDetail"
+    puts 'Done migrating Journal'
+    puts 'About to migrate JournalDetail'
     SourceJournalDetail.migrate
-    puts "Done migrating JournalDetail"
+    puts 'Done migrating JournalDetail'
 
-    puts "About to migrate TimeEntry"
+    puts 'About to migrate TimeEntry'
     SourceTimeEntry.migrate
-    puts "Done migrating TimeEntry"
+    puts 'Done migrating TimeEntry'
 
-    puts "About to migrate Attachment"
+    puts 'About to migrate Attachment'
     SourceAttachment.migrate
-    puts "Done migrating Attachment"
+    puts 'Done migrating Attachment'
   end
 
   class Mapper
