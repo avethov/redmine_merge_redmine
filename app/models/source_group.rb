@@ -37,14 +37,14 @@ class SourceGroup < ActiveRecord::Base
 
   # ActiveRecord allows class to pull entries out of the database
   def self.migrate
-    all(:conditions => { :type => 'Group' }).each do |source_group|
+    where(type: 'Group').each do |source_group|
       target_group = SourceGroup.find_target(source_group)
       if target_group
         puts "  Skipping existing group #{source_group.lastname}"
       else
         puts "  Migrating group #{source_group.lastname}"
         target_attributes = source_group.attributes.dup.except('users')
-        target_group = Group.create!() do |g|
+        target_group = Group.create!(target_attributes) do |g|
           g.users = []
         end
       end
