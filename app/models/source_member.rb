@@ -4,61 +4,58 @@ class SourceMember < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'members'
 
-  belongs_to :principal, :class_name => 'SourcePrincipal', :foreign_key => 'user_id'
-  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
-  has_many :member_roles, :class_name => 'SourceMemberRole', :foreign_key => 'member_id'
-  has_many :roles, :through => :member_roles
+  belongs_to :principal, class_name: 'SourcePrincipal'
+  belongs_to :project,   class_name: 'SourceProject'
 
-  def self.groups
-    joins(:principal).all(:conditions => { :users => { type: 'Group' }})
-  end
+  has_many :member_roles, class_name: 'SourceMemberRole', foreign_key: 'member_id'
+  has_many :roles, through: :member_roles
 
-  def self.users
-    joins(:principal).all(:conditions => { :users => { type: 'User' }})
-  end
+  scope :groups, -> { joins(:principal).where(users: { type: 'Group' }) }
+  scope :users, -> { joins(:principal).where(users: { type: 'User' }) }
 
   def self.find_target(source_member)
-    principal = SourceUser.find_target(source_member.principal)
-    project   = SourceProject.find_target(source_member.project)
-    Member.find_by_user_id_and_project_id(principal.id, project.id)
+    Member.where(
+      user_id: SourceUser.find_target(source_member.principal),
+      project_id: SourceProject.find_target(source_member.project)
+    ).first
   end
 
   def self.find_group_target(source_member)
-    principal = Group.find_by_lastname(source_member.principal.lastname)
-    project   = SourceProject.find_target(source_member.project)
-    Member.find_by_user_id_and_project_id(principal.id, project.id)
+    Member.where(
+      user_id: SourceGroup.find_target(source_member.principal),
+      project_id: SourceProject.find_target(source_member.project)
+    ).first
   end
 
   # Because of the inherited_by field the members that are groups need to migrated first
-  def self.migrateGroups
-    # Only handle "Groups" in this method
+  def self.migrate_groups
     groups.each do |source_member|
       target_member = SourceMember.find_group_target(source_member)
       if target_member
         puts "  Skipping existing group membership #{source_member.principal} for project #{source_member.project.identifier}"
       else
-        Member.create!(source_member.attributes) do |m|
-          m.project = SourceProject.find_target(source_member.project)
-          m.principal = Group.find_by_lastname(source_member.principal.lastname)
-
-          Array(source_member.roles).each do |source_role|
-            target_role = SourceRole.find_target(source_role)
-            m.roles << target_role if target_role
-          end
-
-          puts <<LOG
-  Migrated group membership
-    project: #{m.project.name}
-    group: #{m.principal.lastname}
+        puts <<LOG
+  Migrating group membership
+    project: #{source_member.project.name}
+    group: #{source_member.principal}
 LOG
+        Member.create!(source_member.attributes) do |m|
+          m.project   = SourceProject.find_target(source_member.project)
+          m.principal = SourceGroup.find_target(source_member.principal)
+
+          Array(source_member.member_roles).each do |source_member_role|
+            target_role = SourceRole.find_target(source_member_role.role)
+            if target_role && !m.roles.include?(target_role)
+              m.roles << target_role
+            end
+          end
         end
       end
     end
   end
 
   # Because of the inherited_by field the members that are groups need to migrated first
-  def self.migrateMembers
-    # Only handle "Users" in this method
+  def self.migrate_members
     users.each do |source_member|
       target_member = SourceMember.find_target(source_member)
       if target_member
@@ -66,24 +63,24 @@ LOG
         next
       end
 
-      roles = source_member.member_roles.reject(&:inherited?)
+      member_roles = source_member.member_roles.reject(&:inherited?)
 
       # No need to enter the member if there are no non inherited roles
-      next if roles.empty?
+      next if member_roles.empty?
 
       puts <<LOG
   Migrating user membership
-    project: #{m.project.name}
-    principal: #{m.principal}
+    project: #{source_member.project.name}
+    principal: #{source_member.principal}
 LOG
       Member.create!(source_member.attributes) do |m|
         m.project   = SourceProject.find_target(source_member.project)
         m.principal = SourceUser.find_target(source_member.principal)
 
-        roles.each do |role|
-          target_role = SourceRole.find_target(role)
-          unless target_role.nil? && m.roles.include?(target_role)
-            m.roles << target_role.id
+        member_roles.each do |source_member_role|
+          target_role = SourceRole.find_target(source_member_role.role)
+          if target_role && !m.roles.include?(target_role)
+            m.roles << target_role
           end
         end
       end
