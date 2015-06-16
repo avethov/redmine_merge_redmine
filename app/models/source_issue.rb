@@ -12,8 +12,8 @@ class SourceIssue < ActiveRecord::Base
   belongs_to :fixed_version, class_name: 'SourceVersion'
 
   def self.find_target(source)
-    TargetIssue.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
-      TargetIssue.where(
+    Issue.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
+      Issue.where(
         project_id: SourceProject.find_target(source.project),
         author_id: SourceUser.find_target(source.author),
         subject: source.subject,
