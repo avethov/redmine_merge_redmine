@@ -13,27 +13,50 @@ class SourceUser < ActiveRecord::Base
   self.table_name = "users"
 
   has_and_belongs_to_many :groups, :class_name => 'SourceGroup', :join_table => 'groups_users', :foreign_key => 'user_id', :association_foreign_key => 'group_id'
+  has_many :email_addresses, class_name: 'SourceEmailAddress'
 
   def self.find_target(user, options = { fail: true })
-    target = User.find_by_mail(user.mail) || User.find_by_login(user.login)
+    target = User.where(login: user.login).first ||
+             User.having_mail(user.mails).first
     if target.nil? && options[:fail]
-      fail "No target found with mail `#{user.mail}` or login `#{user.login}`"
+      fail "No target found with mails #{user.mails.inspect} or login `#{user.login}`"
     end
     target
   end
 
   # ActiveRecord allows class to pull entries out of the database
   def self.migrate
-    all(:conditions => { :type => 'User' }).each do |source_user|
-      if SourceUser.find_target(source_user)
-        puts "  Skipping existing user #{source_user}"
+    where(type: 'User').each do |source|
+      if SourceUser.find_target(source, fail: false)
+        puts "  Skipping existing user #{source}"
         next
       end
 
-      User.create!(source_user.attributes) do |u|
-        u.login = source_user.login
-        u.admin = source_user.admin
-        u.hashed_password = source_user.hashed_password
+      puts "  Migrating user #{source}"
+      User.create!(source.attributes) do |target|
+        target.login = source.login
+        target.admin = source.admin
+        target.hashed_password = source.hashed_password
+
+        target.email_addresses = source.email_addresses.map do |source_mail|
+          SourceEmailAddress.find_target(source_mail) ||
+            begin
+              mail = EmailAddress.new(source_mail.attributes.dup.except('user_id'))
+              mail.created_on = DateTime.now
+              mail.updated_on = DateTime.now
+              mail
+            end
+        end
+
+        if target.email_addresses.empty?
+          target.email_address =
+            begin
+              mail = EmailAddress.new(address: "#{source.login}@redmine-merge.com", notify: false, is_default: true)
+              mail.created_on = DateTime.now
+              mail.updated_on = DateTime.now
+              mail
+            end
+        end
       end
     end
   end
