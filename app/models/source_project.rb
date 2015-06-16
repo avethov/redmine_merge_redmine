@@ -2,21 +2,22 @@ class SourceProject < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'projects'
 
-  has_many :enabled_modules, :class_name => 'SourceEnabledModule', :foreign_key => 'project_id'
-  has_and_belongs_to_many :trackers, :class_name => 'SourceTracker', :join_table => 'projects_trackers', :foreign_key => 'project_id', :association_foreign_key => 'tracker_id'
-  has_and_belongs_to_many :custom_fields, :class_name => 'SourceCustomField', :join_table => "custom_fields_projects", :foreign_key => 'project_id', :association_foreign_key => 'custom_field_id'
-  belongs_to :parent, :class_name => 'SourceProject', :foreign_key => 'parent_id'
+  has_many :enabled_modules, class_name: 'SourceEnabledModule', foreign_key: 'project_id'
+  has_and_belongs_to_many :trackers, class_name: 'SourceTracker', join_table: 'projects_trackers', foreign_key: 'project_id', association_foreign_key: 'tracker_id'
+  has_and_belongs_to_many :custom_fields, class_name: 'SourceCustomField', join_table: 'custom_fields_projects', foreign_key: 'project_id', association_foreign_key: 'custom_field_id'
+  belongs_to :parent, class_name: 'SourceProject'
 
   def self.find_target(source_project)
     return nil unless source_project
-    Project.find_by_id(RedmineMerge::Mapper.get_new_project_id(source_project.id)) ||
+    Project.find_by_id(RedmineMerge::Mapper.target_id(source_project)) ||
       Project.find_by_name(source_project.name) ||
       Project.find_by_identifier(source_project.identifier)
   end
 
   def self.create_target(source_project)
     # KS - additions to try to prevent the errors when calling create()
-    # Unauthorized assignment to lft: it's an internal field handled by acts_as_nested_set code, use move_to_* methods instead.
+    # Unauthorized assignment to lft: it's an internal field handled
+    # by acts_as_nested_set code, use move_to_* methods instead.
 
     attributes = source_project.attributes.dup.except('trackers', 'parent_id', 'lft', 'rgt')
     project = Project.create!(attributes) do |p|
@@ -25,8 +26,8 @@ class SourceProject < ActiveRecord::Base
         p.enabled_module_names = source_project.enabled_modules.collect(&:name)
       end
 
-      puts "handling project trackers for project #{p.name}"
-      # KS - for some reason the project trackers get initialized with entries for all trackers -- need to clear out
+      # KS - for some reason the project trackers get initialized with
+      # entries for all trackers -- need to clear out
       p.trackers = []
       Array(source_project.trackers).each do |source_tracker|
         target_tracker = SourceTracker.find_target(source_tracker)
@@ -48,7 +49,7 @@ class SourceProject < ActiveRecord::Base
   end
 
   def self.migrate
-    all(:order => 'lft ASC').each do |source_project|
+    order(lft: :asc).each do |source_project|
       target_project = SourceProject.find_target(source_project)
 
       if target_project
@@ -56,9 +57,10 @@ class SourceProject < ActiveRecord::Base
       else
         puts "  Migrating project #{source_project.name} (#{source_project.id}: #{source_project.identifier})"
         target_project = create_target(source_project)
+        puts "    Target project #{target_project.name} (#{target_project.id}: #{target_project.identifier})"
       end
 
-      RedmineMerge::Mapper.add_project(source_project.id, target_project.id)
+      RedmineMerge::Mapper.map(source_project, target_project)
     end
   end
 end
