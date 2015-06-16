@@ -30,11 +30,12 @@ class SourceIssue < ActiveRecord::Base
         puts "  Skipping existing issue ##{target.id} - #{target.subject}"
       else
         puts "  Migrating issue ##{source.id} - #{source.subject}"
-
         attributes = source.attributes.dup.except('parent_id', 'lft', 'rgt')
         target = TargetIssue.create!(attributes) do |i|
           i.id         = (source.id + 1000)
           i.subject    = source.subject
+          i.lft        = source.lft
+          i.rgt        = source.rgt
           i.updated_on = source.updated_on
           i.created_on = source.created_on
 
