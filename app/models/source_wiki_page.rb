@@ -2,33 +2,33 @@ class SourceWikiPage < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'wiki_pages'
 
-  belongs_to :wiki, :class_name => 'SourceWiki', :foreign_key => 'wiki_id'
-  belongs_to :parent, :class_name => 'SourceWikiPage', :foreign_key => 'parent_id'
+  belongs_to :wiki, class_name: 'SourceWiki', foreign_key: 'wiki_id'
+  belongs_to :parent, class_name: 'SourceWikiPage', foreign_key: 'parent_id'
 
-  def self.find_target(source_wiki_page)
-    return nil unless source_wiki_page
-    wiki = SourceWiki.find_target(source_wiki_page.wiki)
-    WikiPage.find_by_title_and_wiki_id(source_wiki_page.title, wiki.id)
+  def self.find_target(source)
+    return nil unless source
+    WikiPage.where(
+      title: source.title,
+      wiki_id: SourceWiki.find_target(source.wiki)
+    ).first
   end
 
   def self.migrate
-    all(:order => 'parent_id ASC').each do |source_wiki_page|
-      target_wiki_page = SourceWikiPage.find_target(source_wiki_page)
+    order(parent_id: :asc).each do |source|
+      target = SourceWikiPage.find_target(source)
 
-      if target_wiki_page
-        puts "  Skipping existing wiki page #{source_wiki_page.title}"
+      if target
+        puts "  Skipping existing wiki page #{source.title}"
       else
-        puts <<LOG
-  Migrating wiki page #{source_wiki_page.title}
-LOG
-        target_wiki_page = WikiPage.create!(source_wiki_page.attributes) do |wp|
-          wp.wiki = SourceWiki.find_target(source_wiki_page.wiki)
-          wp.parent = SourceWikiPage.find_target(source_wiki_page.parent)
+        puts "Migrating wiki page #{source.title}"
+        target = WikiPage.create!(source.attributes) do |wp|
+          wp.wiki = SourceWiki.find_target(source.wiki)
+          wp.parent = SourceWikiPage.find_target(source.parent)
         end
-        puts "    mapping: #{source_wiki_page.id} => #{wiki_page.id}"
+        puts "    mapping: #{source.id} => #{target.id}"
       end
 
-      RedmineMerge::Mapper.add_wiki_page(source_wiki_page.id, target_wiki_page.id)
+      RedmineMerge::Mapper.map(source, target)
     end
   end
 end
