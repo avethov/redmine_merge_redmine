@@ -2,30 +2,33 @@ class SourceNews < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'news'
 
-  belongs_to :author, :class_name => 'SourceUser', :foreign_key => 'author_id'
-  # Added by KS
-  belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
+  belongs_to :author,  class_name: 'SourceUser'
+  belongs_to :project, class_name: 'SourceProject'
+
+  def self.find_target(source)
+    return nil unless source
+    News.where(
+      author_id:  SourceUser.find_target(source.author),
+      project_id: SourceProject.find_target(source.project),
+      title: source.title
+    ).first
+  end
 
   def self.migrate
-    all.each do |source_news|
-      puts "source_news project = #{source_news.project.name}, author = #{source_news.author.login}"
+    all.each do |source|
+      target = find_target(source)
+      if target
+        puts "  Skipping existing news #{target.title} by #{target.author}"
+        next
+      end
 
-      # KS - you have to set the project and author before creating the new news event due to foreign 
-      #      key constraints.  Note that you have to just assign the ID not the class (e.g., author_id rather than author)
-      source_news.project_id = RedmineMerge::Mapper.get_new_project_id(source_news.project.id)
-      
-      puts "  Source author_id: #{source_news.author_id} source author login: #{source_news.author.login}"
-      author_tmp = User.find_by_login(source_news.author.login)
-      source_news.author_id = author_tmp.id
-      puts "  Merged author_id: #{source_news.author_id}"
-      puts "  Merged project_id: #{source_news.project_id}"
-            
-      news = News.create!(source_news.attributes)
+      puts "  Migrating news: #{source.title} by #{source.author}"
+      target = News.create!(source.attributes) do |n|
+        n.author  = SourceUser.find_target(source.author)
+        n.project = SourceProject.find_target(source.project)
+      end
 
-      puts "  source id: #{source_news.id}"      
-      puts "  migrated id: #{news.id}"      
-      # Added by KS - need to have the mapping for attachments
-      RedmineMerge::Mapper.add_news(source_news.id, news.id)
+      RedmineMerge::Mapper.map(source, target)
     end
   end
 end
