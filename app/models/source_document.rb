@@ -1,18 +1,34 @@
+# coding: utf-8
 class SourceDocument < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'documents'
 
-  belongs_to :category, :class_name => 'SourceEnumeration', :foreign_key => 'category_id'
+  belongs_to :category, class_name: 'SourceEnumeration'
+  belongs_to :project,  class_name: 'SourceProject'
+
+  def self.find_target(source)
+    Document.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
+      Document.where(
+        project_id: SourceProject.find_target(source.project),
+        title: source.title
+      ).first
+  end
 
   def self.migrate
-    all.each do |source_document|
+    all.each do |source|
+      target = find_target(source)
 
-      document = Document.create!(source_document.attributes) do |d|
-        d.project = Project.find(RedmineMerge::Mapper.get_new_project_id(source_document.project_id))
-        d.category = DocumentCategory.find_by_name(source_document.category.name)
+      if target
+        puts "  Skipping existing document #{source.title}"
+      else
+        puts "  Migrating document #{source.title}"
+        target = Document.create!(source.attributes) do |d|
+          d.project = SourceProject.find_target(source.project)
+          d.category = SourceEnumeration.find_target(source.category)
+        end
       end
-      
-      RedmineMerge::Mapper.add_document(source_document.id, document.id)
+
+      RedmineMerge::Mapper.map(source, target)
     end
   end
 end
