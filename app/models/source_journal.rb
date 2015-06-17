@@ -1,43 +1,51 @@
 class SourceJournal < ActiveRecord::Base
   include SecondDatabase
-  set_table_name :journals
+  self.table_name = 'journals'
 
-  belongs_to :journalized, :polymorphic => true
-  belongs_to :issue, :class_name => 'SourceIssue', :foreign_key => :journalized_id
-  # Added by KS
-  belongs_to :user, :class_name => 'SourceUser', :foreign_key => 'user_id'
-  
+  belongs_to :user, class_name: 'SourceUser', foreign_key: 'user_id'
+
+  # Needs to be a custom relation accessor because the `polymorphic`
+  # option cannot use source models for `SourceJournal`.
+  def journalized
+    source_klass = "Source#{journalized_type}".constantize
+    source_klass.find_by_id(journalized_id)
+  end
+
+  def self.find_target(source)
+    return nil unless source
+    Journal.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
+      Journal.where(
+        journalized_id:   source.journalized.class.find_target(source.journalized),
+        journalized_type: source.journalized_type,
+        user_id:          SourceUser.find_target(source.user),
+        created_on:       source.created_on
+      ).first
+  end
+
   def self.migrate
-    all.each do |source_journals|
-            
-      # It is possible that the issue has been deleted -- don't insert journal entries associated
-      #  with deleted issues
-      if source_journals.issue
-
-        # Add logic to replace any #1234 with the new issue number
-        # - Pull out the matching issue number string from the "Notes"
-        # - Determine if the issue number matches a source issue number, if so get the merged issue number
-        # - Replace the source issue number with the merged issue number in the "notes" column
-        if source_journals.notes
-          issue_strings = source_journals.notes.scan /#[\d]+/      
-          issue_strings.each do |issue_string| 
-            puts "Matched issue string: #{issue_string}  journalalized_id: #{source_journals.issue.id}"
-            issue_number = issue_string.gsub(/#/, "")
-            merged_issue_number = RedmineMerge::Mapper.get_new_issue_id(issue_number.to_i)
-            if (merged_issue_number)
-              puts "  Replacing: '#{issue_string}' with: '##{merged_issue_number}'"
-              source_journals.notes = source_journals.notes.gsub("#{issue_string}","##{merged_issue_number}")          
-            end
-          end      
-        end
-
-        journal = Journal.create!(source_journals.attributes) do |j|
-          j.issue = Issue.find(RedmineMerge::Mapper.get_new_issue_id(source_journals.issue.id))
-          # Added by KS
-          j.user = User.find_by_login(source_journals.user.login)
-        end
-        RedmineMerge::Mapper.add_journal(source_journals.id, journal.id)
+    order(journalized_id: :asc).each do |source|
+      unless source.journalized
+        puts "  Skipping journal for missing journalized #{source.journalized_type} ##{source.journalized_id}"
+        next
       end
+
+      target = find_target(source)
+      if target
+        puts "  Skipping existing journal for #{target.journalized_type} ##{target.journalized_id}"
+      else
+        puts "  Migrating journal for #{source.journalized_type} ##{source.journalized_id}"
+        target = Journal.create!(source.attributes) do |j|
+          j.user        = SourceUser.find_target(source.user)
+          j.journalized =
+            source.journalized.class.find_target(source.journalized)
+
+          if source.notes
+            j.notes = RedmineMerge::Mapper.replace_issue_refs(source.notes)
+          end
+        end
+      end
+
+      RedmineMerge::Mapper.map(source, target)
     end
   end
 end
