@@ -11,6 +11,10 @@ class SourceIssue < ActiveRecord::Base
   belongs_to :tracker,       class_name: 'SourceTracker'
   belongs_to :fixed_version, class_name: 'SourceVersion'
 
+  def to_s
+    "Issue ##{id} - #{subject}"
+  end
+
   def self.find_target(source)
     Issue.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Issue.where(

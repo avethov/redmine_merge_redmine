@@ -6,6 +6,10 @@ class SourceDocument < ActiveRecord::Base
   belongs_to :category, class_name: 'SourceEnumeration'
   belongs_to :project,  class_name: 'SourceProject'
 
+  def to_s
+    "Document #{title}"
+  end
+
   def self.find_target(source)
     Document.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Document.where(

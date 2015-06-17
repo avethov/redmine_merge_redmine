@@ -5,6 +5,10 @@ class SourceWikiPage < ActiveRecord::Base
   belongs_to :wiki, class_name: 'SourceWiki', foreign_key: 'wiki_id'
   belongs_to :parent, class_name: 'SourceWikiPage', foreign_key: 'parent_id'
 
+  def to_s
+    "SourceWikiPage #{title}"
+  end
+
   def self.find_target(source)
     return nil unless source
     WikiPage.where(
