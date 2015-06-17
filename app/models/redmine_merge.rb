@@ -129,11 +129,19 @@ class RedmineMerge
     end
 
     def self.map(source, target)
-      mapping(source.class.table_name)[source.id] = target.id
+      mapping(source.class.table_name)[source.id.to_i] = target.id
     end
 
-    def self.target_id(source)
-      mapping(source.class.table_name)[source.id]
+    def self.target_id(*args)
+      table_name, source_id =
+        if args.first.is_a?(String)
+          [args.first, args.second]
+        else
+          source = args.first
+          return nil unless source
+          [source.class.table_name, source.id]
+        end
+      mapping(table_name)[source_id.to_i]
     end
 
     # Add logic to replace any issue number found within the description (e.g.,#1234) with the new issue number
