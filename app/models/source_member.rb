@@ -4,8 +4,8 @@ class SourceMember < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'members'
 
-  belongs_to :principal, class_name: 'SourcePrincipal'
-  belongs_to :project,   class_name: 'SourceProject'
+  belongs_to :principal, class_name: 'SourcePrincipal', foreign_key: 'user_id'
+  belongs_to :project,   class_name: 'SourceProject',   foreign_key: 'project_id'
 
   has_many :member_roles, class_name: 'SourceMemberRole', foreign_key: 'member_id'
   has_many :roles, through: :member_roles
