@@ -17,7 +17,7 @@ class SourceMember < ActiveRecord::Base
     return unless source_member
     fail "Expected SourceMember got #{source_member.class}" unless source_member.is_a?(SourceMember)
     Member.where(
-      user_id: SourceUser.find_target(source_member.principal),
+      user_id: SourcePrincipal.find_target(source_member.principal),
       project_id: SourceProject.find_target(source_member.project)
     ).first
   end
@@ -26,7 +26,7 @@ class SourceMember < ActiveRecord::Base
     return nil unless source_member
     fail "Expected SourceMember got #{source_member.class}" unless source_member.is_a?(SourceMember)
     Member.where(
-      user_id: SourceGroup.find_target(source_member.principal),
+      user_id: SourcePrincipal.find_target(source_member.principal),
       project_id: SourceProject.find_target(source_member.project)
     ).first
   end
@@ -45,7 +45,7 @@ class SourceMember < ActiveRecord::Base
 LOG
         Member.create!(source_member.attributes) do |m|
           m.project   = SourceProject.find_target(source_member.project)
-          m.principal = SourceGroup.find_target(source_member.principal)
+          m.principal = SourcePrincipal.find_target(source_member.principal)
 
           Array(source_member.member_roles).each do |source_member_role|
             target_role = SourceRole.find_target(source_member_role.role)
@@ -79,7 +79,7 @@ LOG
 LOG
       Member.create!(source_member.attributes) do |m|
         m.project   = SourceProject.find_target(source_member.project)
-        m.principal = SourceUser.find_target(source_member.principal)
+        m.principal = SourcePrincipal.find_target(source_member.principal)
 
         member_roles.each do |source_member_role|
           target_role = SourceRole.find_target(source_member_role.role)
