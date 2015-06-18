@@ -5,6 +5,11 @@ class SourceQuery < ActiveRecord::Base
   belongs_to :user,    class_name: 'SourceUser'
   belongs_to :project, class_name: 'SourceProject'
 
+  serialize :filters
+  serialize :column_names
+  serialize :sort_criteria, Array
+  serialize :options, Hash
+
   def self.find_target(source)
     return nil unless source
     fail "Expected SourceQuery got #{source.class}" unless source.is_a?(SourceQuery)
