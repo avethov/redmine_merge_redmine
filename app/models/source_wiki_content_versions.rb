@@ -8,7 +8,7 @@ class SourceWikiContentVersions < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
-    fail "Expected SourceWikiContentVersion got #{source.class}" unless source.is_a?(SourceWikiContentVersion)
+    fail "Expected SourceWikiContentVersions got #{source.class}" unless source.is_a?(SourceWikiContentVersions)
     WikiContentVersions.where(
       version: source.version,
       page_id: SourceWikiPage.find_target(source.page)
