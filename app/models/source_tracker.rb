@@ -12,7 +12,7 @@ class SourceTracker < ActiveRecord::Base
     Tracker.find_by_name(source_tracker.name)
   end
 
-  def self.migrate_tracker_custom_fields(target_tracker, source_fields)
+  def self.migrate_custom_fields(target_tracker, source_fields)
     Array(source_fields).each do |source_field|
       target_field = SourceCustomField.find_target(source_field)
       if target_field.nil?
@@ -38,7 +38,7 @@ class SourceTracker < ActiveRecord::Base
         puts "  Migrating tracker #{source_tracker.name}"
         Tracker.create!(source_tracker.attributes)
       end
-      migrate_tracker_custom_fields(source_tracker, target_tracker)
+      migrate_custom_fields(source_tracker, target_tracker.custom_fields)
     end
   end
 end
