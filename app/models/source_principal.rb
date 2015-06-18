@@ -10,4 +10,11 @@ class SourcePrincipal < ActiveRecord::Base
     when 'User' then SourceUser.find_target(source.becomes(SourceUser), fail: false)
     end
   end
+
+  def to_s
+    case type
+    when 'Group' then "#{lastname}"
+    when 'User' then "#{firstname} #{lastname}"
+    end
+  end
 end
