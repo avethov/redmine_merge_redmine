@@ -8,6 +8,8 @@ class SourceWorkflow < ActiveRecord::Base
   belongs_to :new_status, class_name: 'SourceIssueStatus'
 
   def self.find_target(source_workflow)
+    return nil unless source_workflow
+    fail "Expected SourceWorkflow got #{source_workflow.class}" unless source_workflow.is_a?(SourceWorkflow)
     WorkflowRule.where(
       old_status_id: SourceIssueStatus.find_target(source_workflow.old_status),
       new_status_id: SourceIssueStatus.find_target(source_workflow.new_status),

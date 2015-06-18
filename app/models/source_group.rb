@@ -17,9 +17,12 @@ class SourceGroup < ActiveRecord::Base
 
   has_and_belongs_to_many :users, :class_name => 'SourceUser', :join_table => 'groups_users', :foreign_key => 'group_id', :association_foreign_key => 'user_id'
 
-  def self.find_target(source_group)
-    return nil unless source_group
-    Group.find_by_lastname(source_group.lastname)
+  def self.find_target(source)
+    return nil unless source
+    unless source.is_a?(SourceGroup) || source.is_a?(SourcePrincipal)
+      fail "Expected SourceGroup or SourcePrincipal got #{source.class}"
+    end
+    Group.find_by_lastname(source.lastname)
   end
 
   def self.migrate_group_users(target_group, source_users)

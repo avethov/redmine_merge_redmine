@@ -7,6 +7,7 @@ class SourceWikiContent < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceWikiContent got #{source.class}" unless source.is_a?(SourceWikiContent)
     WikiContent.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       WikiContent.where(
         page_id: SourceWikiPage.find_target(source.page)

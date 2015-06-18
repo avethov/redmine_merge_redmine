@@ -6,6 +6,7 @@ class SourceWiki < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceWiki got #{source.class}" unless source.is_a?(SourceWiki)
     Wiki.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Wiki.where(
         project_id: SourceProject.find_target(source.project)

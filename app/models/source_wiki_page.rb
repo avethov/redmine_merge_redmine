@@ -11,6 +11,7 @@ class SourceWikiPage < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceWikiPage got #{source.class}" unless source.is_a?(SourceWikiPage)
     WikiPage.where(
       title: source.title,
       wiki_id: SourceWiki.find_target(source.wiki)

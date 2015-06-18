@@ -14,6 +14,8 @@ class SourceMember < ActiveRecord::Base
   scope :users, -> { joins(:principal).where(users: { type: 'User' }) }
 
   def self.find_target(source_member)
+    return unless source_member
+    fail "Expected SourceMember got #{source_member.class}" unless source_member.is_a?(SourceMember)
     Member.where(
       user_id: SourceUser.find_target(source_member.principal),
       project_id: SourceProject.find_target(source_member.project)
@@ -21,6 +23,8 @@ class SourceMember < ActiveRecord::Base
   end
 
   def self.find_group_target(source_member)
+    return nil unless source_member
+    fail "Expected SourceMember got #{source_member.class}" unless source_member.is_a?(SourceMember)
     Member.where(
       user_id: SourceGroup.find_target(source_member.principal),
       project_id: SourceProject.find_target(source_member.project)

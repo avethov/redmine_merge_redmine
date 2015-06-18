@@ -11,6 +11,7 @@ class SourceWatcher < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceWatcher got #{source.class}" unless source.is_a?(SourceWatcher)
     Watcher.where(
       user_id: SourceUser.find_target(source.user),
       watchable_id: find_watchable_target(source.watchable_type, source.watchable)

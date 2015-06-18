@@ -16,6 +16,8 @@ class SourceIssue < ActiveRecord::Base
   end
 
   def self.find_target(source)
+    return unless source
+    fail "Expected SourceIssue got #{source.class}" unless source.is_a?(SourceIssue)
     Issue.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Issue.where(
         project_id: SourceProject.find_target(source.project),

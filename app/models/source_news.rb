@@ -7,6 +7,7 @@ class SourceNews < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceNews got #{source.class}" unless source.is_a?(SourceNews)
     News.where(
       author_id:  SourceUser.find_target(source.author),
       project_id: SourceProject.find_target(source.project),

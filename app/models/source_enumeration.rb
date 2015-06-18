@@ -7,6 +7,8 @@ class SourceEnumeration < ActiveRecord::Base
   belongs_to :project, class_name: 'SourceProject', foreign_key: 'project_id'
 
   def self.find_target(source_enum)
+    return nil unless source_enum
+    fail "Expected SourceEnumeration got #{source_enum.class}" unless source_enum.is_a?(SourceEnumeration)
     fail "Unknown enum type #{source_enum.type}" unless ALLOWED_TYPES.include?(source_enum.type)
     project = SourceProject.find_target(source_enum.project)
     conditions = { name: source_enum.name }

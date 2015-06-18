@@ -8,6 +8,7 @@ class SourceCustomValue < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceCustomValue got #{source.class}" unless source.is_a?(SourceCustomValue)
     CustomValue.where(
       customized_type: source.customized_type,
       customized_id: source.customized.class.find_target(source.customized),

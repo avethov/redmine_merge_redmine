@@ -8,6 +8,7 @@ class SourceTracker < ActiveRecord::Base
 
   def self.find_target(source_tracker)
     return nil unless source_tracker
+    fail "Expected SourceTracker got #{source_tracker.class}" unless source_tracker.is_a?(SourceTracker)
     Tracker.find_by_name(source_tracker.name)
   end
 

@@ -6,6 +6,7 @@ class SourceIssueCategory < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceIssueCategory got #{source.class}" unless source.is_a?(SourceIssueCategory)
     IssueCategory.where(
       name: source.name,
       project_id: SourceProject.find_target(source.project)

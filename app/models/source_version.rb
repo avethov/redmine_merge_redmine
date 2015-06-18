@@ -6,6 +6,7 @@ class SourceVersion < ActiveRecord::Base
 
   def self.find_target(source_version)
     return nil unless source_version
+    fail "Expected SourceVersion got #{source_version.class}" unless source_version.is_a?(SourceVersion)
     Version.find_by_id(RedmineMerge::Mapper.target_id(source_version)) ||
       Version.where(
         name: source_version.name,

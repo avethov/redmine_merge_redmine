@@ -7,6 +7,7 @@ class SourceCustomField < ActiveRecord::Base
 
   def self.find_target(source_custom_field)
     return nil unless source_custom_field
+    fail "Expected SourceCustomField got #{source.class}" unless source.is_a?(SourceCustomField)
     CustomField.find_by_name(source_custom_field.name)
   end
 

@@ -5,6 +5,8 @@ class SourceRepository < ActiveRecord::Base
   belongs_to :project, :class_name => 'SourceProject', :foreign_key => 'project_id'
 
   def self.find_target(source_repo)
+    return nil unless source_repo
+    fail "Expected SourceRepository got #{source_repo.class}" unless source_repo.is_a?(SourceRepository)
     target_url     = source_repo.url
     target_project = SourceProject.find_target(source_repo.project)
     Repository.find_by_url_and_project_id(target_url, target_project.id)

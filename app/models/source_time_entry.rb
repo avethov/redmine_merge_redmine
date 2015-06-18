@@ -9,6 +9,7 @@ class SourceTimeEntry < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceTimeEntry got #{source.class}" unless source.is_a?(SourceTimeEntry)
     TimeEntry.where(
       user:       SourceUser.find_target(source.user),
       project:    SourceProject.find_target(source.project),

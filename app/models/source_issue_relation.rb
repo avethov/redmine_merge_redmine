@@ -7,6 +7,7 @@ class SourceIssueRelation < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceIssueRelation got #{source.class}" unless source.is_a?(SourceIssueRelation)
     IssueRelation.where(
       issue_from: SourceIssue.find_target(source.issue_from),
       issue_to:   SourceIssue.find_target(source.issue_to),

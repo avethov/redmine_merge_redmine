@@ -6,6 +6,7 @@ class SourceAttachment < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceAttachment got #{source.class}" unless source.is_a?(SourceAttachment)
     Attachment.where(
       author_id: SourceUser.find_target(source.author),
       container_id: source.container.class.find_target(source.container),

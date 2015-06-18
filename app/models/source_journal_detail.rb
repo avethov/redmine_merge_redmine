@@ -6,6 +6,7 @@ class SourceJournalDetail < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceJournalDetail got #{source.class}" unless source.is_a?(SourceJournalDetail)
     JournalDetail.where(
       journal_id: SourceJournal.find_target(source.journal),
       property:   source.property,

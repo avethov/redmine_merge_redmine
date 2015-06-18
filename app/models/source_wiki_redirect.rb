@@ -8,6 +8,7 @@ class SourceWikiRedirect < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceWikiRedirect got #{source.class}" unless source.is_a?(SourceWikiRedirect)
     WikiRedirect.where(
       title: source.title,
       wiki_id: SourceWiki.find_target(source.wiki),

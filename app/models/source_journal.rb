@@ -13,6 +13,7 @@ class SourceJournal < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
+    fail "Expected SourceJournal got #{source.class}" unless source.is_a?(SourceJournal)
     Journal.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Journal.where(
         journalized_id:   source.journalized.class.find_target(source.journalized),

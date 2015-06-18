@@ -9,6 +9,7 @@ class SourceProject < ActiveRecord::Base
 
   def self.find_target(source_project)
     return nil unless source_project
+    fail "Expected SourceProject got #{source_project.class}" unless source_project.is_a?(SourceProject)
     Project.find_by_id(RedmineMerge::Mapper.target_id(source_project)) ||
       Project.find_by_name(source_project.name) ||
       Project.find_by_identifier(source_project.identifier)

@@ -11,6 +11,8 @@ class SourceDocument < ActiveRecord::Base
   end
 
   def self.find_target(source)
+    return nil unless source
+    fail "Expected SourceDocument got #{source.class}" unless source.is_a?(SourceDocument)
     Document.find_by_id(RedmineMerge::Mapper.target_id(source)) ||
       Document.where(
         project_id: SourceProject.find_target(source.project),

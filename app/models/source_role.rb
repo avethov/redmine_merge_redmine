@@ -11,6 +11,7 @@ class SourceRole < ActiveRecord::Base
 
   def self.find_target(source_role)
     return nil unless source_role
+    fail "Expected SourceRole got #{source_role.class}" unless source_role.is_a?(SourceRole)
     Role.find_by_name(source_role.name)
   end
 
