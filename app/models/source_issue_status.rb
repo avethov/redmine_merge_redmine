@@ -9,13 +9,13 @@ class SourceIssueStatus < ActiveRecord::Base
   end
 
   def self.migrate
-    all.each do |source_issue_status|
-      if SourceIssueStatus.find_target(source_issue_status)
-        puts "  Skipping existing issue status #{source_issue_status.name}"
+    all.each do |source|
+      if find_target(source)
+        puts "  Skipping existing issue status #{source.name}"
         next
       end
 
-      IssueStatus.create!(source_issue_status.attributes)
+      IssueStatus.create!(source.attributes)
     end
   end
 end
