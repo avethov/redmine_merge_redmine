@@ -6,8 +6,8 @@ class SourcePrincipal < ActiveRecord::Base
     return nil unless source
     fail "Expected SourcePrincipal got #{source.class}" unless source.is_a?(SourcePrincipal)
     case source.type
-    when 'Group' then SourceGroup.find_target(source)
-    when 'User' then SourceUser.find_target(source, fail: false)
+    when 'Group' then SourceGroup.find_target(source.becomes(SourceGroup))
+    when 'User' then SourceUser.find_target(source.becomes(SourceUser), fail: false)
     end
   end
 end

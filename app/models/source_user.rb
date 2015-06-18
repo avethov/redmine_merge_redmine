@@ -24,9 +24,7 @@ class SourceUser < ActiveRecord::Base
   end
 
   def self.find_target(source, options = { fail: true })
-    unless source.is_a?(SourceUser) || source.is_a?(SourcePrincipal)
-      fail "Expected SourceUser or SourcePrincipal got #{source.class}"
-    end
+    fail "Expected SourceUser got #{source.class}" unless source.is_a?(SourceUser)
     target = User.where(login: source.login).first ||
              User.having_mail(source.mails).first
     if target.nil? && options[:fail]

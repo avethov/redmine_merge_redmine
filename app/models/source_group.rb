@@ -19,9 +19,7 @@ class SourceGroup < ActiveRecord::Base
 
   def self.find_target(source)
     return nil unless source
-    unless source.is_a?(SourceGroup) || source.is_a?(SourcePrincipal)
-      fail "Expected SourceGroup or SourcePrincipal got #{source.class}"
-    end
+    fail "Expected SourceGroup got #{source.class}" unless source.is_a?(SourceGroup)
     Group.find_by_lastname(source.lastname)
   end
 
