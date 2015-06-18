@@ -16,18 +16,18 @@ class SourceQuery < ActiveRecord::Base
   end
 
   def self.migrate
-    all.each do |source_query|
-      target_query = SourceQuery.find_target(source_query)
+    all.each do |source|
+      target_query = SourceQuery.find_target(source)
       if target_query
-        puts "  Skipping existing #{source_query.type} #{target_query.name}"
+        puts "  Skipping existing #{source.type} #{target_query.name}"
         next
       end
 
-      puts "  Migrating #{source_query.type} #{source_query.name}"
-      query_klass = source_query.type.constantize
-      query_klass.create!(source_query.attributes) do |q|
-        q.project = SourceProject.find_target(source_query.project)
-        q.user    = SourceUser.find_target(source_query.user)
+      puts "  Migrating #{source.type} #{source.name}"
+      query_klass = source.type.constantize
+      query_klass.create!(source.attributes) do |q|
+        q.project = SourceProject.find_target(source.project)
+        q.user    = SourceUser.find_target(source.user)
       end
     end
   end
