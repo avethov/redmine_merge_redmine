@@ -42,3 +42,7 @@ class SourceEnumeration < ActiveRecord::Base
     migrate_enum('DocumentCategory')
   end
 end
+
+class SourceIssuePriority < SourceEnumeration; end
+class SourceTimeEntryActivity < SourceEnumeration; end
+class SourceDocumentCategory < SourceEnumeration; end
