@@ -29,7 +29,9 @@ class SourceJournalDetail < ActiveRecord::Base
   def target_old_value
     # Need to remap propery keys to their new ids
     if prop_key.include?('_id')
-      RedmineMerge::Mapper.target_id(val_class.find_by_id(old_value))
+      klass = "Source#{val_class.name}".constantize
+      target = klass.find_target(klass.find_by_id(old_value))
+      target && target.id
     else
       old_value
     end
@@ -38,7 +40,9 @@ class SourceJournalDetail < ActiveRecord::Base
   def target_value
     # Need to remap propery keys to their new ids
     if prop_key.include?('_id')
-      RedmineMerge::Mapper.target_id(val_class.find_by_id(value))
+      klass = "Source#{val_class.name}".constantize
+      target = klass.find_target(klass.find_by_id(value))
+      target && target.id
     else
       value
     end
@@ -58,7 +62,7 @@ class SourceJournalDetail < ActiveRecord::Base
         next
       end
 
-      puts "  Migrating journal ##{target_journal.id} details - #{source.property} #{source.prop_key}"
+      puts "  Migrating journal ##{target_journal.id} details - #{source.property} #{source.prop_key} - #{source.old_value} => #{source.value} becomes #{source.target_old_value} => #{source.target_value}"
       JournalDetail.create!(source.attributes) do |jd|
         jd.journal   = target_journal
         jd.old_value = source.target_old_value
