@@ -12,19 +12,19 @@ class SourceTracker < ActiveRecord::Base
     Tracker.find_by_name(source_tracker.name)
   end
 
-  def self.migrate_custom_fields(target_tracker, source_fields)
-    Array(source_fields).each do |source_field|
-      target_field = SourceCustomField.find_target(source_field)
-      if target_field.nil?
-        puts "    Skipping missing target field #{source_field.name}"
+  def self.migrate_custom_fields(source_tracker, target_tracker)
+    Array(source_tracker.custom_fields).each do |source_custom_field|
+      target_custom_field = SourceCustomField.find_target(source_custom_field)
+      if target_custom_field.nil?
+        puts "    Skipping missing target field #{source_custom_field.name}"
         next
       end
-      if target_tracker.custom_fields.include?(target_field)
-        puts "    Skipping existing custom field #{source_field.name}"
+      if target_tracker.custom_fields.include?(target_custom_field)
+        puts "    Skipping existing custom field #{source_custom_field.name}"
         next
       end
-      puts "    Adding custom field #{source_field.name}"
-      target_tracker.custom_fields << target_field
+      puts "    Adding custom field #{source_custom_field.name}"
+      target_tracker.custom_fields << target_custom_field
     end
     target_tracker.save
   end
@@ -36,9 +36,9 @@ class SourceTracker < ActiveRecord::Base
         puts "  Skipping existing tracker #{source_tracker.name}"
       else
         puts "  Migrating tracker #{source_tracker.name}"
-        Tracker.create!(source_tracker.attributes)
+        target_tracker = Tracker.create!(source_tracker.attributes)
       end
-      migrate_custom_fields(source_tracker, target_tracker.custom_fields)
+      migrate_custom_fields(source_tracker, target_tracker)
     end
   end
 end
