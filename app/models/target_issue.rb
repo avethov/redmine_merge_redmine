@@ -12,4 +12,11 @@ class TargetIssue < ActiveRecord::Base
   belongs_to :fixed_version, :class_name => 'Version'
   belongs_to :priority, :class_name => 'IssuePriority'
   belongs_to :category, :class_name => 'IssueCategory'
+
+  after_create do |record|
+    unless record.root_id
+      record.root_id = record.id
+      record.save
+    end
+  end
 end
