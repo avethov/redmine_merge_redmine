@@ -24,9 +24,10 @@ class SourceWikiRedirect < ActiveRecord::Base
         next
       end
 
-      puts "  Migrating wiki redirect #{target.title}"
+      puts "  Migrating wiki redirect #{source.title}"
       WikiRedirect.create!(source.attributes) do |wr|
         wr.wiki = SourceWiki.find_target(source.wiki)
+        wr.redirects_to_wiki_id = wr.wiki.id
       end
     end
   end
