@@ -61,13 +61,13 @@ class RedmineMerge
     SourceIssueCategory.migrate
     puts 'Done migrating IssueCategory'
     puts 'About to migrate issue_priorities'
-    SourceEnumeration.migrate_issue_priorities
+    SourceIssuePriority.migrate
     puts 'Done migrating issue_priorities'
     puts 'About to migrate time_entry_activities'
-    SourceEnumeration.migrate_time_entry_activities
+    SourceTimeEntryActivity.migrate
     puts 'Done migrating time_entry_activities'
     puts 'About to migrate document_categories'
-    SourceEnumeration.migrate_document_categories
+    SourceDocumentCategory.migrate
     puts 'Done migrating document_categories'
 
     puts 'About to migrate Document'

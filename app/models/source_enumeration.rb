@@ -30,19 +30,7 @@ class SourceEnumeration < ActiveRecord::Base
     end
   end
 
-  def self.migrate_issue_priorities
-    migrate_enum('IssuePriority')
-  end
-
-  def self.migrate_time_entry_activities
-    migrate_enum('TimeEntryActivity')
-  end
-
   def self.migrate_document_categories
     migrate_enum('DocumentCategory')
   end
 end
-
-class SourceIssuePriority < SourceEnumeration; end
-class SourceTimeEntryActivity < SourceEnumeration; end
-class SourceDocumentCategory < SourceEnumeration; end
