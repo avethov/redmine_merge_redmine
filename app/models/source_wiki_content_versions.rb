@@ -27,7 +27,16 @@ class SourceWikiContentVersions < ActiveRecord::Base
       target.version = source.version
 
       target.updated_on = source.updated_on
+      target.id = get_id(source)
     end
+  end
+
+  def self.get_id(source)
+    return nil unless source
+
+    duplicate = WikiContentVersions.where(id: source.id).first
+    puts "  Warning new id for attachment id #{source.id}" if duplicate
+    duplicate ? nil : source.id
   end
 
   def self.migrate
