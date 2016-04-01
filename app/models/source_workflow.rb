@@ -32,7 +32,7 @@ class SourceWorkflow < ActiveRecord::Base
         w.new_status = SourceIssueStatus.find_target(source_workflow.new_status)
         w.role       = SourceRole.find_target(source_workflow.role)
         w.tracker    = SourceTracker.find_target(source_workflow.tracker)
-        w.type = 'WorkflowTransition'
+        w.type       = source_workflow.type
       end
 
       migrated += 1
