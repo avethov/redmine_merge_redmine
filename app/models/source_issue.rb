@@ -60,7 +60,7 @@ class SourceIssue < Issue
           i.priority      = SourceEnumeration.find_target(source.priority)
           i.status        = SourceIssueStatus.find_target(source.status)
           i.tracker       = SourceTracker.find_target(source.tracker)
-          i.description   = RedmineMerge::Mapper.replace_issue_refs(source.description)
+          i.description   = RedmineMerge::Mapper.replace_issue_refs(source.description) if source.description
         end
         puts "    target: ##{target.id} - #{target.subject}"
       end
