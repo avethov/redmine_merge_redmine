@@ -1,4 +1,4 @@
-class SourceIssue < ActiveRecord::Base
+class SourceIssue < Issue
   include SecondDatabase
   self.table_name = 'issues'
 
@@ -40,7 +40,7 @@ class SourceIssue < ActiveRecord::Base
         puts "  Migrating issue ##{source.id} - #{source.subject}"
         attributes = source.attributes.dup.except('parent_id', 'lft', 'rgt')
         target = TargetIssue.create!(attributes) do |i|
-          i.id         = (source.id + 1000)
+          i.id         = (source.id + 10000)
           i.subject    = source.subject
           i.lft        = source.lft
           i.rgt        = source.rgt
@@ -60,8 +60,7 @@ class SourceIssue < ActiveRecord::Base
           i.priority      = SourceEnumeration.find_target(source.priority)
           i.status        = SourceIssueStatus.find_target(source.status)
           i.tracker       = SourceTracker.find_target(source.tracker)
-          i.description   =
-            RedmineMerge::Mapper.replace_issue_refs(source.description)
+          i.description   = RedmineMerge::Mapper.replace_issue_refs(source.description)
         end
         puts "    target: ##{target.id} - #{target.subject}"
       end

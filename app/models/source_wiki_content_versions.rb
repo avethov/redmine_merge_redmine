@@ -41,6 +41,11 @@ class SourceWikiContentVersions < ActiveRecord::Base
 
   def self.migrate
     all.each do |source|
+	  if !source.author
+	    puts "  Skipping wiki content version for page #{source.page.title}, invalid author"
+		next
+      end
+
       if SourceWikiContentVersions.find_target(source)
         puts "  Skipping existing content version for #{source.page.title} (##{source.version})"
       else

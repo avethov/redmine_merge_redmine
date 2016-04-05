@@ -16,6 +16,11 @@ class SourceWikiContent < ActiveRecord::Base
 
   def self.migrate
     all.each do |source|
+	  if !source.author
+	    puts "  Skipping wiki content page #{source.page.title}, invalid author"
+		next
+      end
+
       target = SourceWikiContent.find_target(source)
       if target
         puts "  Skipping existing wiki content for page #{source.page.title} by #{source.author}"
