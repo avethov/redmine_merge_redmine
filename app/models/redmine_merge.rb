@@ -124,6 +124,13 @@ class RedmineMerge
     SourceDmsfFileRevision.migrate
     SourceDmsfFileRevisionAccess.migrate
     puts 'Done migrating Dmsf plugin'
+	
+    puts 'About to migrate backlog plugin'
+    SourceRbProjectSettings.migrate
+    SourceRbRelease.migrate
+    SourceRbSprintBurndown.migrate
+    SourceRbIssueHistory.migrate
+    puts 'Done migrating backlog plugin'
   end
 
   class Mapper
