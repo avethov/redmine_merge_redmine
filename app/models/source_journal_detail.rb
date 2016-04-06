@@ -18,6 +18,7 @@ class SourceJournalDetail < ActiveRecord::Base
 
   def val_class
     property_name = prop_key.to_s.gsub(/\_id$/, '').to_sym
+	return RbRelease.class if property_name == 'release'
     journalized_class = journal.journalized_type.constantize
     association = journalized_class.reflect_on_all_associations.detect do |a|
       a.name == property_name

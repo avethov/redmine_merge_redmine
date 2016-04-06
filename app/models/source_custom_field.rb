@@ -1,3 +1,5 @@
+require 'yaml'
+
 class SourceCustomField < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'custom_fields'
@@ -18,7 +20,9 @@ class SourceCustomField < ActiveRecord::Base
         next
       end
 
-      CustomField.create!(source.attributes) do |cf|
+      attributes = source.attributes.dup.except('possible_values')
+	  attributes[:possible_values] = YAML.load(source.attributes['possible_values'])
+      CustomField.create!(attributes) do |cf|
         # Type must be set explicitly -- not included in the attributes
         cf.type = source.type
       end

@@ -25,7 +25,13 @@ class SourceAttachment < ActiveRecord::Base
 
   def self.migrate
     all.each do |source|
+	  if !source.container_type
+	    puts "WARN  Skipping attachment #{source.disk_filename}, missing container"
+	    next
+	  end
+
       target = find_target(source)
+	  
       if target
         puts "  Skipping existing attachment for #{source.container}"
         next
