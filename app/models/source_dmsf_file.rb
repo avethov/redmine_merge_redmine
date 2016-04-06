@@ -25,6 +25,11 @@ class SourceDmsfFile < ActiveRecord::Base
     order(id: :asc).each do |source|
       target = find_target(source)
 
+  	  if !source.project
+	    puts "WARN  Skipping dmsf file #{source.name}, missing project"
+	    next
+	  end
+
       if target
         puts "  Skipping existing dmsf file #{source.name}"
 		next

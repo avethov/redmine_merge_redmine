@@ -25,6 +25,11 @@ class SourceDmsfFolder < ActiveRecord::Base
     order(id: :asc).each do |source|
       target = find_target(source)
 
+	  if !source.project
+	    puts "WARN  Skipping dmsf folder #{source.title}, missing project"
+	    next
+	  end
+
       if target
         puts "  Skipping existing dmsf folder #{source.title}"
 		next

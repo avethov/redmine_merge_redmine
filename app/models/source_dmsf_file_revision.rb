@@ -26,6 +26,12 @@ class SourceDmsfFileRevision < ActiveRecord::Base
     order(id: :asc).each do |source|
       target = find_target(source)
 
+	  target_file = SourceDmsfFile.find_target(source.file)
+	  if !target_file
+	    puts "WARN  Skipping dmsf file #{source.name}, missing file"
+	    next
+	  end
+
       if target
         puts "  Skipping existing dmsf file #{source.name}"
 		next
@@ -34,7 +40,7 @@ class SourceDmsfFileRevision < ActiveRecord::Base
       puts "  Migrating dmsf file #{source.name} revision #{source.major_version}.#{source.minor_version}"
       target = DmsfFileRevision.create!(source.attributes) do |d|
 	    d.id = nil
-		d.file = SourceDmsfFile.find_target(source.file)
+		d.file = target_file
 		d.source_revision = SourceDmsfFileRevision.find_target(source.source_revision) if source.source_revision
 		d.user = SourceUser.find_target(source.user)
 		d.deleted_by_user = SourceUser.find_target(source.deleted_by_user) if source.deleted_by_user
