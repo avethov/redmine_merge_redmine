@@ -30,11 +30,12 @@ class SourceRbSprintBurndown < ActiveRecord::Base
         puts "  Migrating backlog sprint #{source.version.name} burndown"
 
 		attributes = source.attributes.dup.except('stories', 'burndown')
+        attributes[:stories] = YAML.load(source.attributes['stories'])
+        attributes[:burndown] = YAML.load(source.attributes['burndown'])
+
         target = RbSprintBurndown.create!(attributes) do |s|
 		  s.id = nil
           s.version = SourceVersion.find_target(source.version)
-		  s.stories = YAML.load(source.stories)
-		  s.burndown = YAML.load(source.burndown)
 		  s.created_at = source.created_at
 		  s.updated_at = source.updated_at
         end
