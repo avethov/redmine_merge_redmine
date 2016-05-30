@@ -50,7 +50,11 @@ class SourceIssue < Issue
           parent = SourceIssue.find_target(source.parent)
           i.parent_id = parent.id if parent
           root = SourceIssue.find_target(source.root)
-          i.root_id = root.id if root
+          if root
+            i.root_id = root.id
+          else
+            i.root_id = i.id
+          end
 
           i.fixed_version = SourceVersion.find_target(source.fixed_version)
           i.project       = SourceProject.find_target(source.project)
