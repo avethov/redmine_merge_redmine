@@ -154,9 +154,9 @@ class RedmineMerge
       refs = str.scan(/#([\d]+)/).flatten
       refs.each do |ref|
         source_issue_id = ref.gsub(/#/, '').to_i
-        target_issue_id = mapping('issues')[source_issue_id]
-        puts "=> Updating ref #{ref} with ##{target_issue_id}"
-        str.gsub!("#{ref}", "##{target_issue_id}") if target_issue_id
+        target_issue_id = (source_issue_id + 10000)
+        puts "=> Updating ref #{ref} with #{target_issue_id}"
+        str.gsub!("#{ref}", "#{target_issue_id}") if target_issue_id
       end
       str
     end
