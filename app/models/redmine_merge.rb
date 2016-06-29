@@ -117,20 +117,7 @@ class RedmineMerge
     puts 'About to migrate Attachment'
     SourceAttachment.migrate
     puts 'Done migrating Attachment'
-	
-    puts 'About to migrate Dmsf plugin'
-    SourceDmsfFolder.migrate
-    SourceDmsfFile.migrate
-    SourceDmsfFileRevision.migrate
-    SourceDmsfFileRevisionAccess.migrate
-    puts 'Done migrating Dmsf plugin'
-	
-    puts 'About to migrate backlog plugin'
-    SourceRbProjectSettings.migrate
-    SourceRbRelease.migrate
-    SourceRbSprintBurndown.migrate
-    SourceRbIssueHistory.migrate
-    puts 'Done migrating backlog plugin'
+
   end
 
   class Mapper
