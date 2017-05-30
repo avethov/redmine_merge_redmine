@@ -27,9 +27,9 @@ class RedmineMerge
     puts 'About to migrate Roles'
     SourceRole.migrate
     puts 'Done migrating Roles'
-    puts 'About to migrate Workflows'
-    SourceWorkflow.migrate
-    puts 'Done migrating Workflows'
+    # puts 'About to migrate Workflows'
+    # SourceWorkflow.migrate
+    # puts 'Done migrating Workflows'
 
     # Project-specific data
     puts 'About to migrate Project'
