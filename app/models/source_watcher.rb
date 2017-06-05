@@ -5,7 +5,7 @@ class SourceWatcher < ActiveRecord::Base
   include SecondDatabase
   self.table_name = 'watchers'
 
-  WATCHABLE_TYPES = %w(Issue Document WikiPage Project Version News)
+  WATCHABLE_TYPES = %w(Issue Document WikiPage Project Version News EnabledModule)
 
   belongs_to :user, class_name: 'SourceUser', foreign_key: 'user_id'
 
